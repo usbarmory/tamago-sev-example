@@ -20,4 +20,4 @@ tar --format=oldgnu -Sczf compressed-image.tar.gz disk.raw
 gcloud storage buckets create gs://$BUCKET
 gcloud storage cp compressed-image.tar.gz gs://$BUCKET
 gcloud compute images create tamago-sev-example --source-uri gs://$BUCKET/compressed-image.tar.gz --architecture=X86_64 --guest-os-features=UEFI_COMPATIBLE,SEV_SNP_CAPABLE
-gcloud compute instances create tamago-sev-example --zone=europe-west3-a --machine-type=n2d-standard-2 --metadata="serial-port-enable=1" --image go-boot-example --confidential-compute-type=SEV_SNP --min-cpu-platform="AMD Milan" --maintenance-policy=TERMINATE --private-network-ip 10.156.0.2
+gcloud compute instances create tamago-sev-example --zone=europe-west3-a --machine-type=n2d-standard-2 --metadata="serial-port-enable=1" --image tamago-sev-example --confidential-compute-type=SEV_SNP --min-cpu-platform="AMD Milan" --maintenance-policy=TERMINATE --private-network-ip 10.156.0.2
