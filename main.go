@@ -75,22 +75,13 @@ func main() {
 		x64.Console.Out = 0
 	}
 
-	log.Printf("enable exceptions")
-	x64.AMD64.EnableExceptions()
-
-	//log.Printf("init SMP")
-	//x64.AMD64.InitSMP(-1)
-
-	log.Printf("init IOAPIC")
-	IOAPIC0.Init()
-
 	console := &shell.Interface{
 		Banner:  cmd.Banner,
 	}
 
 	network.SetupStaticWebAssets(cmd.Banner)
 	log.Printf("starting network")
-	network.Init(x64.AMD64, IOAPIC0, VIRTIO_NET_PCI_VENDOR, VIRTIO_NET_PCI_DEVICE, console)
+	network.Init(x64.AMD64, nil, VIRTIO_NET_PCI_VENDOR, VIRTIO_NET_PCI_DEVICE, console)
 
 	log.Printf("done")
 	runtime.Exit(0)
