@@ -13,6 +13,7 @@ LDFLAGS := -s -w -E cpuinit -T $(TEXT_START) -R 0x1000 -X 'main.Console=${CONSOL
 GOFLAGS := -tags ${BUILD_TAGS} -trimpath -ldflags "${LDFLAGS}"
 GOENV := GOOS=tamago GOARCH=amd64
 
+OVMF ?= OVMF.fd
 OVMFCODE ?= OVMF_CODE.fd
 LOG ?= qemu.log
 
@@ -26,6 +27,18 @@ QEMU ?= qemu-system-x86_64 -machine q35,pit=off,pic=off \
         -drive if=pflash,format=raw,readonly,file=$(OVMFCODE) \
         -global isa-debugcon.iobase=0x402 \
         -serial stdio -vga virtio \
+        # -debugcon file:$(LOG)
+
+QEMU-snp ?= qemu-system-x86_64 \
+        -smp $(SMP) \
+        -enable-kvm -cpu host,invtsc=on \
+        -machine q35,confidential-guest-support=sev0,vmport=off,memory-backend=ram1 \
+        -object memory-backend-memfd,id=ram1,size=4G,share=true,prealloc=false \
+        -drive file=fat:rw:$(CURDIR)/qemu-disk \
+        -bios $(OVMF) \
+        -global isa-debugcon.iobase=0x402 \
+        -serial stdio -nographic -monitor none \
+        -object sev-snp-guest,id=sev0,cbitpos=51,reduced-phys-bits=1,policy=0xb0000
         # -debugcon file:$(LOG)
 
 .PHONY: clean

@@ -24,8 +24,8 @@ const (
 	IOAPIC0_BASE = 0xfec00000
 
 	// VirtIO Networking
-	VIRTIO_NET_PCI_VENDOR = 0x1af4 // Red Hat, Inc.
-	VIRTIO_NET_PCI_DEVICE = 0x1000 // Virtio 1.0 network device
+	VIRTIO_NET_PCI_VENDOR = 0x1ae0 // Google, Inc.
+	VIRTIO_NET_PCI_DEVICE = 0x0042 // Compute Engine Virtual Ethernet [gVNIC]
 )
 
 const (
@@ -50,38 +50,42 @@ func init() {
 	x64.AllocateDMA(10 << 20)
 }
 
-func main() {
+func exitUEFI() {
 	var err error
+
+	log.Print("exiting EFI boot services")
+
+	for i := 0; i < exitRetries; i++ {
+		if _, err = x64.UEFI.Boot.ExitBootServices(); err != nil {
+			log.Print("exiting EFI boot services (retrying)")
+			continue
+		}
+		break
+	}
+
+	if err != nil {
+		log.Fatalf("could not exit EFI boot services, %v\n", err)
+	}
+
+	// silence EFI Simple Text console
+	x64.Console.Out = 0
+}
+
+func main() {
+	console := &shell.Interface{
+		Banner:  cmd.Banner,
+	}
+
 
 	// disable UEFI watchdog
 	x64.UEFI.Boot.SetWatchdogTimer(0)
 
 	if exit {
-		log.Print("exiting EFI boot services")
-
-		for i := 0; i < exitRetries; i++ {
-			if _, err = x64.UEFI.Boot.ExitBootServices(); err != nil {
-				log.Print("exiting EFI boot services (retrying)")
-				continue
-			}
-			break
-		}
-
-		if err != nil {
-			log.Fatalf("could not exit EFI boot services, %v\n", err)
-		}
-
-		// silence EFI Simple Text console
-		x64.Console.Out = 0
+		exitUEFI()
 	}
 
-	console := &shell.Interface{
-		Banner:  cmd.Banner,
-	}
-
-	network.SetupStaticWebAssets(cmd.Banner)
 	log.Printf("starting network")
-	network.Init(x64.AMD64, nil, VIRTIO_NET_PCI_VENDOR, VIRTIO_NET_PCI_DEVICE, console)
+	network.Init(x64.AMD64, nil, console)
 
 	log.Printf("done")
 	runtime.Exit(0)
