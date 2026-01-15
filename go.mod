@@ -6,7 +6,7 @@ require (
 	github.com/google/go-sev-guest v0.14.1
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/usbarmory/go-boot v1.2.2-0.20260112120243-56da08e95cd4
-	github.com/usbarmory/tamago v1.25.6-0.20260112115240-f6a2117cc336
+	github.com/usbarmory/tamago v1.25.6-0.20260114122054-6f4e8f67041c
 	github.com/usbarmory/tamago-example v0.0.0-20251202214345-da8b8135e043
 	github.com/usbarmory/virtio-net v0.0.0-20250916125519-733a429bd100
 	golang.org/x/crypto v0.42.0

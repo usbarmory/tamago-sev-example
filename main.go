@@ -9,14 +9,12 @@ package main
 
 import (
 	"log"
-	"runtime"
 
 	"github.com/usbarmory/go-boot/uefi/x64"
 	"github.com/usbarmory/tamago/soc/intel/ioapic"
 
 	"github.com/usbarmory/tamago-example/shell"
 	"github.com/usbarmory/tamago-sev-example/cmd"
-	"github.com/usbarmory/tamago-sev-example/network"
 )
 
 const (
@@ -45,9 +43,6 @@ var (
 func init() {
 	log.SetFlags(0)
 	log.SetOutput(x64.UART0)
-
-	// 10MB
-	x64.AllocateDMA(10 << 20)
 }
 
 func exitUEFI() {
@@ -74,8 +69,8 @@ func exitUEFI() {
 func main() {
 	console := &shell.Interface{
 		Banner:  cmd.Banner,
+		ReadWriter: x64.UART0,
 	}
-
 
 	// disable UEFI watchdog
 	x64.UEFI.Boot.SetWatchdogTimer(0)
@@ -84,9 +79,7 @@ func main() {
 		exitUEFI()
 	}
 
-	log.Printf("starting network")
-	network.Init(x64.AMD64, nil, console)
+	console.Start(true)
 
-	log.Printf("done")
-	runtime.Exit(0)
+	log.Printf("exit")
 }

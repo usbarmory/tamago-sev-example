@@ -18,7 +18,8 @@ import (
 	"github.com/usbarmory/tamago/dma"
 	"github.com/usbarmory/tamago/kvm/sev"
 
-	"github.com/usbarmory/go-boot/shell"
+	"github.com/usbarmory/tamago-example/shell"
+
 	"github.com/usbarmory/go-boot/uefi"
 	"github.com/usbarmory/go-boot/uefi/x64"
 )
@@ -125,7 +126,7 @@ func initGHCB() (err error) {
 	resGPA := ghcbGPA + uefi.PageSize*4
 	ghcb = &sev.GHCB{}
 
-	if ghcb.GHCBPage, err = dma.NewRegion(ghcbGPA, uefi.PageSize, false); err != nil {
+	if ghcb.LayoutPage, err = dma.NewRegion(ghcbGPA, uefi.PageSize, false); err != nil {
 		return fmt.Errorf("could not allocate GHCB layout page, %v", err)
 	}
 
