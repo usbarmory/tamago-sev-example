@@ -48,6 +48,12 @@ func init() {
 		Help:    "AMD SEV-SNP attestation report",
 		Fn:      attestationCmd,
 	})
+
+	shell.Add(shell.Cmd{
+		Name: "sev-kdf",
+		Help: "AMD SEV-SNP key derivation",
+		Fn:   kdfCmd,
+	})
 }
 
 func sevCmd(_ *shell.Interface, _ []string) (res string, err error) {
@@ -64,7 +70,7 @@ func sevCmd(_ *shell.Interface, _ []string) (res string, err error) {
 	fmt.Fprintf(&buf, "SEV ................: %v\n", features.SEV.SEV)
 	fmt.Fprintf(&buf, "SEV-ES .............: %v\n", features.SEV.ES)
 	fmt.Fprintf(&buf, "SEV-SNP ............: %v\n", features.SEV.SNP)
-	fmt.Fprintf(&buf, "Encryption bit .....: %d\n", features.EncryptionBit)
+	fmt.Fprintf(&buf, "Encrypted bit ......: %d\n", features.EncryptedBit)
 
 	if !features.SEV.SNP {
 		return
@@ -178,4 +184,25 @@ func attestationCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	}
 
 	return buf.String(), nil
+}
+
+func kdfCmd(_ *shell.Interface, arg []string) (res string, err error) {
+	var key []byte
+
+	if err = initGHCB(); err != nil {
+		return "", fmt.Errorf("could not initialize GHCB, %v", err)
+	}
+
+	// Perform key derivation from the physical CPU keys, bound to the
+	// Guest Policy and VM identity.
+	req := &sev.KeyRequest{
+		KeySelect:        sev.RootKeySelVCEK,
+		GuestFieldSelect: sev.GuestSVN | sev.Measurement | sev.GuestPolicy,
+	}
+
+	if key, err = ghcb.DeriveKey(req, secrets.VMPCK0[:], 0); err != nil {
+		return "", fmt.Errorf("could not derive key, %v", err)
+	}
+
+	return fmt.Sprintf("%x", key), nil
 }

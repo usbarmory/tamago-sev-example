@@ -6,16 +6,16 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"regexp"
 	"strings"
 
+	"github.com/usbarmory/tamago/dma"
 	"github.com/usbarmory/tamago/kvm/gvnic"
+	"github.com/usbarmory/tamago/kvm/sev"
 	"github.com/usbarmory/tamago/soc/intel/pci"
 
 	"github.com/usbarmory/tamago-example/shell"
@@ -124,7 +124,33 @@ func netCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	return fmt.Sprintf("network initialized (%s %s)\n", arg[0], iface.NIC.MAC), nil
 }
 
+// TODO: move to go-boot
+func allocateDMA(dmaSize int) (err error) {
+	features := sev.Features(x64.AMD64)
+
+	if !features.SEV.SNP {
+		x64.AllocateDMA(dmaSize)
+		return
+	}
+
+	// align to 2MB page for exact encryption disabling
+	dmaStart := int(x64.RamSize) - dmaSize
+	dmaSize += dmaStart % (2 << 20)
+	x64.AllocateDMA(dmaSize)
+
+	start := uint64(dma.Default().Start())
+	end := uint64(dma.Default().End())
+
+	// disable encryption for DMA region
+	return sev.SetEncryptedBit(x64.AMD64, start, end, features.EncryptedBit, false)
+}
+
 func gvnicCmd(console *shell.Interface, arg []string) (res string, err error) {
+	// allocate 10MB DMA region for network driver
+	if err = allocateDMA(10 << 20); err != nil {
+		return
+	}
+
 	gve := &gvnic.GVE{
 		Device: pci.Probe(
 			0,
@@ -133,20 +159,11 @@ func gvnicCmd(console *shell.Interface, arg []string) (res string, err error) {
 		),
 	}
 
-	if ghcb.RequestPage == nil || ghcb.ResponsePage == nil {
-		return "", errors.New("shared memory page unavailable, run `sev-report` first")
-	}
-
-	gve.QueueRegion = ghcb.RequestPage
-	gve.CommandRegion = ghcb.ResponsePage
-
 	if err = gve.Init(); err != nil {
 		return
 	}
 
-	log.Printf("Info: %+v\n", gve.Info)
-
-	return fmt.Sprintf("network initialized\n"), nil
+	return fmt.Sprintf("network initialized (%s)\n", gve.MAC()), nil
 }
 
 func dnsCmd(_ *shell.Interface, arg []string) (res string, err error) {

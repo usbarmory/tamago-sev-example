@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"os"
 	"regexp"
 	"runtime"
 	"runtime/debug"
@@ -22,7 +21,6 @@ import (
 )
 
 const testDiversifier = "\xde\xad\xbe\xef"
-const LogPath = "/go-boot.log"
 
 var Banner string
 
@@ -34,12 +32,6 @@ func init() {
 		Name: "build",
 		Help: "build information",
 		Fn:   buildInfoCmd,
-	})
-
-	shell.Add(shell.Cmd{
-		Name: "log",
-		Help: "show runtime logs",
-		Fn:   logCmd,
 	})
 
 	shell.Add(shell.Cmd{
@@ -86,11 +78,6 @@ func buildInfoCmd(_ *shell.Interface, _ []string) (string, error) {
 	}
 
 	return res.String(), nil
-}
-
-func logCmd(_ *shell.Interface, _ []string) (string, error) {
-	res, err := os.ReadFile(LogPath)
-	return string(res), err
 }
 
 func exitCmd(_ *shell.Interface, _ []string) (res string, err error) {
