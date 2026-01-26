@@ -17,8 +17,7 @@ import (
 	"github.com/usbarmory/tamago/kvm/sev"
 	"github.com/usbarmory/tamago/kvm/virtio"
 
-	"github.com/usbarmory/tamago-example/shell"
-
+	"github.com/usbarmory/go-boot/shell"
 	"github.com/usbarmory/go-boot/uefi/x64"
 
 	"github.com/gliderlabs/ssh"

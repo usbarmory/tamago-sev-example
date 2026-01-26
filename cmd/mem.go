@@ -12,8 +12,9 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/usbarmory/tamago-example/shell"
 	"github.com/usbarmory/tamago/dma"
+
+	"github.com/usbarmory/go-boot/shell"
 )
 
 const maxBufferSize = 102400

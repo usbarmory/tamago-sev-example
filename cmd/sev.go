@@ -17,8 +17,7 @@ import (
 	"github.com/usbarmory/tamago/dma"
 	"github.com/usbarmory/tamago/kvm/sev"
 
-	"github.com/usbarmory/tamago-example/shell"
-
+	"github.com/usbarmory/go-boot/shell"
 	"github.com/usbarmory/go-boot/uefi"
 	"github.com/usbarmory/go-boot/uefi/x64"
 )

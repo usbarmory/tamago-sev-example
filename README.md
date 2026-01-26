@@ -19,27 +19,34 @@ exiting EFI boot services
 
 tamago-sev-example • tamago/amd64 (go1.26rc2) • UEFI x64
 
-build                                            # build information
-cpuid           <leaf> <subleaf>                 # show CPU capabilities
-date            (time in RFC339 format)          # show/change runtime date and time
-dns             <host>                           # resolve domain
-exit,quit                                        # exit application
-help                                             # this help
-info                                             # device information
-lspci                                            # list PCI devices
-msr             <hex addr>                       # read model-specific register
-net-gve                                          # start gVNIC networking
-net-uefi        <ip> <mac> <gw> (debug)?         # start UEFI networking
-net-virtio      <ip> <mask> <gw> (debug)?        # start VirtIO networking
-peek            <hex addr> <size>                # memory display (use with caution)
-poke            <hex addr> <hex value>           # memory write   (use with caution)
-sev                                              # AMD SEV-SNP information
-sev-kdf                                          # AMD SEV-SNP key derivation
-sev-report      (raw|verify)?                    # AMD SEV-SNP attestation report
-sev-tsc                                          # AMD SEV-SNP TSC information
-stack                                            # goroutine stack trace (current)
-stackall                                         # goroutine stack trace (all)
-uptime                                           # show system running time
+build                                     # build information
+cat             <path>                    # show file contents
+cpuid           <leaf> <subleaf>          # show CPU capabilities
+date            (time in RFC339 format)?  # show/change runtime date and time
+dns             <host>                    # resolve domain
+efivar          (verbose)?                # list all UEFI variables
+exit,quit                                 # exit application
+halt,shutdown                             # shutdown system
+help                                      # this help
+info                                      # device information
+ls              (<path>)?                 # list directory contents
+lspci                                     # list PCI devices
+msr             <hex addr>                # read model-specific register
+net-gve                                   # start gVNIC networking
+net-uefi        <ip> <mac> <gw> (debug)?  # start UEFI networking
+net-virtio      <ip> <mask> <gw> (debug)? # start VirtIO networking
+peek            <hex addr> <size>         # memory display (use with caution)
+poke            <hex addr> <hex value>    # memory write   (use with caution)
+reset           (cold|warm)?              # reset system
+sev                                       # AMD SEV-SNP information
+sev-kdf                                   # AMD SEV-SNP key derivation
+sev-report      (raw|verify)?             # AMD SEV-SNP attestation report
+sev-tsc                                   # AMD SEV-SNP TSC information
+stack                                     # goroutine stack trace (current)
+stackall                                  # goroutine stack trace (all)
+stat            <path>                    # show file information
+uefi                                      # UEFI information
+uptime                                    # show system running time
 
 > sev
 SEV ................: true

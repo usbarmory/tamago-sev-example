@@ -12,9 +12,9 @@ import (
 
 	"github.com/usbarmory/tamago/soc/intel/ioapic"
 
+	"github.com/usbarmory/go-boot/shell"
 	"github.com/usbarmory/go-boot/uefi/x64"
 
-	"github.com/usbarmory/tamago-example/shell"
 	"github.com/usbarmory/tamago-sev-example/cmd"
 )
 
