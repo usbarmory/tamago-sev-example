@@ -10,8 +10,8 @@ Engine](https://cloud.google.com/products/compute).
 Operation
 =========
 
-The default operation is to exit UEFI boot services, then present a shell and
-its services.
+The default operation is to present an interactive shell with commands
+registered from the `cmd` package:
 
 ```
 initializing EFI services
@@ -19,26 +19,26 @@ exiting EFI boot services
 
 tamago-sev-example • tamago/amd64 (go1.26rc2) • UEFI x64
 
-build						 # build information
-cpuid		<leaf> <subleaf>		 # show CPU capabilities
-date		(time in RFC339 format)?	 # show/change runtime date and time
-dns		<host>				 # resolve domain
-exit,quit					 # exit application
-help						 # this help
-info						 # device information
-lspci						 # list PCI devices
-msr		<hex addr>			 # read model-specific register
-net		<ip> <mac> <gw> (debug)?	 # start UEFI networking
-peek		<hex addr> <size>		 # memory display (use with caution)
-poke		<hex addr> <hex value>		 # memory write   (use with caution)
-sev						 # AMD SEV-SNP information
-sev-kdf						 # AMD SEV-SNP key derivation
-sev-report	(raw|verify)?			 # AMD SEV-SNP attestation report
-sev-tsc						 # AMD SEV-SNP TSC information
-stack						 # goroutine stack trace (current)
-stackall					 # goroutine stack trace (all)
-uptime						 # show system running time
-virtio-net	<ip> <mask> <gw> (debug)?	 # start VirtIO networking
+build                                            # build information
+cpuid           <leaf> <subleaf>                 # show CPU capabilities
+date            (time in RFC339 format)          # show/change runtime date and time
+dns             <host>                           # resolve domain
+exit,quit                                        # exit application
+help                                             # this help
+info                                             # device information
+lspci                                            # list PCI devices
+msr             <hex addr>                       # read model-specific register
+net             <ip> <mac> <gw> (debug)?         # start UEFI networking
+peek            <hex addr> <size>                # memory display (use with caution)
+poke            <hex addr> <hex value>           # memory write   (use with caution)
+sev                                              # AMD SEV-SNP information
+sev-kdf                                          # AMD SEV-SNP key derivation
+sev-report      (raw|verify)?                    # AMD SEV-SNP attestation report
+sev-tsc                                          # AMD SEV-SNP TSC information
+stack                                            # goroutine stack trace (current)
+stackall                                         # goroutine stack trace (all)
+uptime                                           # show system running time
+virtio-net      <ip> <mask> <gw> (debug)?        # start VirtIO networking
 
 > sev
 SEV ................: true
