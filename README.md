@@ -175,7 +175,8 @@ network initialized (10.0.0.1/24 da:e7:ac:e2:5e:05)
 Google Virtual NIC (gVNIC)
 --------------------------
 
-> [!WARNING] this is a work in progress, not yet operational
+> [!WARNING]
+> this is a work in progress, not yet operational
 
 When running under  [Google Compute
 Engine](https://cloud.google.com/products/compute) gVNIC support is available
