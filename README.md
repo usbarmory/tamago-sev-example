@@ -95,7 +95,7 @@ QEMU supported targets can be executed under emulation, using the
 as follows:
 
 ```
-make qemu OVMF=<path to OVMF.fd>
+make qemu OVMF=<path to OVMF.amdsev.fd>
 ```
 
 For networking, `tap0` should be configured as follows (Linux example):
