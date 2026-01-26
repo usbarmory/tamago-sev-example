@@ -13,7 +13,7 @@ LDFLAGS := -s -w -E cpuinit -T $(TEXT_START) -R 0x1000 -X 'main.Console=${CONSOL
 GOFLAGS := -tags ${BUILD_TAGS} -trimpath -ldflags "${LDFLAGS}"
 GOENV := GOOS=tamago GOARCH=amd64
 
-OVMF ?= OVMF.fd
+OVMF ?= OVMF.amdsev.fd
 OVMFCODE ?= OVMF_CODE.fd
 LOG ?= qemu.log
 
@@ -39,7 +39,7 @@ QEMU_SNP ?= qemu-system-x86_64 \
         -bios $(OVMF) -kernel $(APP).efi \
         -global isa-debugcon.iobase=0x402 \
         -serial stdio -nographic -monitor none \
-        -object sev-snp-guest,id=sev0,cbitpos=51,reduced-phys-bits=1,policy=0x30000
+        -object sev-snp-guest,id=sev0,cbitpos=51,reduced-phys-bits=1,policy=0x30000,kernel-hashes=on
         # -monitor unix:qemu-monitor-socket,server,nowait
 
 # UEFI Simple Network Protocol available
