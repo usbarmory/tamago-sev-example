@@ -38,6 +38,10 @@ func init() {
 }
 
 func netCmd(_ *shell.Interface, arg []string) (res string, err error) {
+	if x64.Console.Out == 0 {
+		return "", fmt.Errorf("EFI boot services not available")
+	}
+
 	nic, err := x64.UEFI.Boot.GetNetwork()
 
 	if err != nil {
