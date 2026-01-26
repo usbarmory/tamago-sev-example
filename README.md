@@ -28,7 +28,9 @@ help                                             # this help
 info                                             # device information
 lspci                                            # list PCI devices
 msr             <hex addr>                       # read model-specific register
-net             <ip> <mac> <gw> (debug)?         # start UEFI networking
+net-gve                                          # start gVNIC networking
+net-uefi        <ip> <mac> <gw> (debug)?         # start UEFI networking
+net-virtio      <ip> <mask> <gw> (debug)?        # start VirtIO networking
 peek            <hex addr> <size>                # memory display (use with caution)
 poke            <hex addr> <hex value>           # memory write   (use with caution)
 sev                                              # AMD SEV-SNP information
@@ -38,7 +40,6 @@ sev-tsc                                          # AMD SEV-SNP TSC information
 stack                                            # goroutine stack trace (current)
 stackall                                         # goroutine stack trace (all)
 uptime                                           # show system running time
-virtio-net      <ip> <mask> <gw> (debug)?        # start VirtIO networking
 
 > sev
 SEV ................: true

@@ -22,7 +22,7 @@ const (
 	// Intel I/O Programmable Interrupt Controllers
 	IOAPIC0_BASE = 0xfec00000
 
-	exit        = true
+	exit        = false
 	exitRetries = 3
 )
 
