@@ -9,27 +9,12 @@ package cmd
 
 import (
 	"fmt"
-	"net"
-	"net/http"
 	_ "net/http/pprof"
-	"regexp"
-	"strings"
 
 	"github.com/usbarmory/tamago/kvm/gvnic"
 	"github.com/usbarmory/tamago/soc/intel/pci"
 
 	"github.com/usbarmory/tamago-example/shell"
-
-	"github.com/gliderlabs/ssh"
-	"github.com/usbarmory/go-net"
-
-	"github.com/usbarmory/go-boot/uefi"
-	"github.com/usbarmory/go-boot/uefi/x64"
-)
-
-const (
-	VIRTIO_NET_PCI_VENDOR = 0x1ae0 // Google, Inc.
-	VIRTIO_NET_PCI_DEVICE = 0x0042 // Compute Engine Virtual Ethernet [gVNIC]
 )
 
 func init() {
