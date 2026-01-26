@@ -15,8 +15,8 @@ import (
 	"github.com/usbarmory/tamago/amd64"
 	"github.com/usbarmory/tamago/soc/intel/pci"
 
-	"github.com/usbarmory/tamago-example/shell"
 	"github.com/usbarmory/go-boot/uefi/x64"
+	"github.com/usbarmory/tamago-example/shell"
 )
 
 func init() {
@@ -117,11 +117,13 @@ func msrCmd(_ *shell.Interface, arg []string) (string, error) {
 func lspciCmd(_ *shell.Interface, arg []string) (string, error) {
 	var res bytes.Buffer
 
-	fmt.Fprintf(&res, "Bus Vendor Device Revision Bar0\n")
+	//fmt.Fprintf(&res, "Bus Vendor Device Revision Bar0\n")
+	fmt.Fprintf(&res, "Bus Vendor Device Bar0\n")
 
 	for i := 0; i < 256; i++ {
 		for _, d := range pci.Devices(i) {
-			fmt.Fprintf(&res, "%03d %04x   %04x   %02x   %#016x\n", i, d.Vendor, d.Device, d.Revision, d.BaseAddress(0))
+			//fmt.Fprintf(&res, "%03d %04x   %04x   %02x   %#016x\n", i, d.Vendor, d.Device, d.Revision, d.BaseAddress(0))
+			fmt.Fprintf(&res, "%03d %04x   %04x   %#016x\n", i, d.Vendor, d.Device, d.BaseAddress(0))
 		}
 	}
 

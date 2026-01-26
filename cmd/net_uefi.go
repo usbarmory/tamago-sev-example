@@ -13,11 +13,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/usbarmory/tamago/dma"
-	"github.com/usbarmory/tamago/kvm/gvnic"
-	"github.com/usbarmory/tamago/kvm/sev"
-	"github.com/usbarmory/tamago/soc/intel/pci"
-
 	"github.com/usbarmory/tamago-example/shell"
 
 	"github.com/gliderlabs/ssh"
@@ -26,9 +21,6 @@ import (
 	"github.com/usbarmory/go-boot/uefi"
 	"github.com/usbarmory/go-boot/uefi/x64"
 )
-
-// Resolver represents the default name server
-var Resolver = "8.8.8.8:53"
 
 const receiveMask = uefi.EFI_SIMPLE_NETWORK_RECEIVE_UNICAST |
 	uefi.EFI_SIMPLE_NETWORK_RECEIVE_BROADCAST |
@@ -43,23 +35,6 @@ func init() {
 		Help:    "start UEFI networking",
 		Fn:      netCmd,
 	})
-
-	shell.Add(shell.Cmd{
-		Name:    "gvnic",
-		Help:    "start gVNIC networking",
-		Fn:      gvnicCmd,
-	})
-
-	shell.Add(shell.Cmd{
-		Name:    "dns",
-		Args:    1,
-		Pattern: regexp.MustCompile(`^dns (.*)`),
-		Syntax:  "<host>",
-		Help:    "resolve domain",
-		Fn:      dnsCmd,
-	})
-
-	net.SetDefaultNS([]string{Resolver})
 }
 
 func netCmd(_ *shell.Interface, arg []string) (res string, err error) {
@@ -122,56 +97,4 @@ func netCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	}
 
 	return fmt.Sprintf("network initialized (%s %s)\n", arg[0], iface.NIC.MAC), nil
-}
-
-// TODO: move to go-boot
-func allocateDMA(dmaSize int) (err error) {
-	features := sev.Features(x64.AMD64)
-
-	if !features.SEV.SNP {
-		x64.AllocateDMA(dmaSize)
-		return
-	}
-
-	// align to 2MB page for exact encryption disabling
-	dmaStart := int(x64.RamSize) - dmaSize
-	dmaSize += dmaStart % (2 << 20)
-	x64.AllocateDMA(dmaSize)
-
-	start := uint64(dma.Default().Start())
-	end := uint64(dma.Default().End())
-
-	// disable encryption for DMA region
-	return sev.SetEncryptedBit(x64.AMD64, start, end, features.EncryptedBit, false)
-}
-
-func gvnicCmd(console *shell.Interface, arg []string) (res string, err error) {
-	// allocate 10MB DMA region for network driver
-	if err = allocateDMA(10 << 20); err != nil {
-		return
-	}
-
-	gve := &gvnic.GVE{
-		Device: pci.Probe(
-			0,
-			gvnic.PCI_VENDOR,
-			gvnic.PCI_DEVICE,
-		),
-	}
-
-	if err = gve.Init(); err != nil {
-		return
-	}
-
-	return fmt.Sprintf("network initialized (%s)\n", gve.MAC()), nil
-}
-
-func dnsCmd(_ *shell.Interface, arg []string) (res string, err error) {
-	cname, err := net.LookupHost(arg[0])
-
-	if err != nil {
-		return "", fmt.Errorf("query error: %v", err)
-	}
-
-	return fmt.Sprintf("%+v\n", cname), nil
 }

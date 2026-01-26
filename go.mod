@@ -8,7 +8,7 @@ require (
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/usbarmory/go-boot v1.2.2-0.20260112120243-56da08e95cd4
 	github.com/usbarmory/go-net v0.0.0-20251003201608-93d9ffe808de
-	github.com/usbarmory/tamago v1.25.6-0.20260114122054-6f4e8f67041c
+	github.com/usbarmory/tamago v1.25.7-0.20260124134515-00899b00f8c9
 	github.com/usbarmory/tamago-example v0.0.0-20251202214345-da8b8135e043
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20251210140736-7dacc380ba00
 )
@@ -33,5 +33,3 @@ require (
 	google.golang.org/protobuf v1.33.0 // indirect
 	gvisor.dev/gvisor v0.0.0-20250911055229-61a46406f068 // indirect
 )
-
-replace github.com/usbarmory/tamago => /mnt/git/public/tamago

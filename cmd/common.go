@@ -9,6 +9,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"net"
 	"regexp"
 	"runtime"
 	"runtime/debug"
@@ -22,7 +23,10 @@ import (
 
 const testDiversifier = "\xde\xad\xbe\xef"
 
-var Banner string
+var (
+	Banner   string
+	Resolver = "8.8.8.8:53"
+)
 
 func init() {
 	Banner = fmt.Sprintf("go-boot • %s/%s (%s) • UEFI x64",
@@ -68,6 +72,17 @@ func init() {
 		Help: "show system running time",
 		Fn:   uptimeCmd,
 	})
+
+	shell.Add(shell.Cmd{
+		Name:    "dns",
+		Args:    1,
+		Pattern: regexp.MustCompile(`^dns (.*)`),
+		Syntax:  "<host>",
+		Help:    "resolve domain",
+		Fn:      dnsCmd,
+	})
+
+	net.SetDefaultNS([]string{Resolver})
 }
 
 func buildInfoCmd(_ *shell.Interface, _ []string) (string, error) {
@@ -112,4 +127,14 @@ func dateCmd(_ *shell.Interface, arg []string) (res string, err error) {
 func uptimeCmd(_ *shell.Interface, _ []string) (string, error) {
 	ns := uptime()
 	return fmt.Sprintf("%s\n", durafmt.Parse(time.Duration(ns)*time.Nanosecond)), nil
+}
+
+func dnsCmd(_ *shell.Interface, arg []string) (res string, err error) {
+	cname, err := net.LookupHost(arg[0])
+
+	if err != nil {
+		return "", fmt.Errorf("query error: %v", err)
+	}
+
+	return fmt.Sprintf("%+v\n", cname), nil
 }
