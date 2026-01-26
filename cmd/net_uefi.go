@@ -28,9 +28,9 @@ const receiveMask = uefi.EFI_SIMPLE_NETWORK_RECEIVE_UNICAST |
 
 func init() {
 	shell.Add(shell.Cmd{
-		Name:    "net",
+		Name:    "net-uefi",
 		Args:    4,
-		Pattern: regexp.MustCompile(`^net (\S+) (\S+) (\S+)( debug)?$`),
+		Pattern: regexp.MustCompile(`^net-uefi (\S+) (\S+) (\S+)( debug)?$`),
 		Syntax:  "<ip> <mac> <gw> (debug)?",
 		Help:    "start UEFI networking",
 		Fn:      netCmd,

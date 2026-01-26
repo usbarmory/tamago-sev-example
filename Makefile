@@ -17,7 +17,7 @@ OVMF ?= OVMF.fd
 OVMFCODE ?= OVMF_CODE.fd
 LOG ?= qemu.log
 
-SMP ?= $(shell nproc)
+SMP ?= 8
 QEMU ?= qemu-system-x86_64 -machine q35,pit=off,pic=off \
         -m 4G -smp $(SMP) \
         -enable-kvm -cpu host,invtsc=on,kvmclock=on -no-reboot \
@@ -26,10 +26,24 @@ QEMU ?= qemu-system-x86_64 -machine q35,pit=off,pic=off \
         -drive format=raw,file=fat:rw:$(CURDIR)/qemu-disk \
         -drive if=pflash,format=raw,readonly,file=$(OVMFCODE) \
         -global isa-debugcon.iobase=0x402 \
-        -serial stdio -vga virtio \
+        -serial stdio -nographic -monitor none  \
         # -debugcon file:$(LOG)
 
+# UEFI Simple Network Protocol not available
 QEMU_SNP ?= qemu-system-x86_64 \
+        -enable-kvm -cpu host,invtsc=on -smp $(SMP)  \
+        -machine q35,confidential-guest-support=sev0,vmport=off,memory-backend=ram1 \
+        -object memory-backend-memfd,id=ram1,size=4G,share=true,prealloc=false \
+        -device pcie-root-port,port=0x10,chassis=1,id=pci.0,bus=pcie.0,multifunction=on,addr=0x3 \
+        -device virtio-net-pci,netdev=net0,mac=42:01:0a:84:00:02 -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \
+        -bios $(OVMF) -kernel $(APP).efi \
+        -global isa-debugcon.iobase=0x402 \
+        -serial stdio -nographic -monitor none \
+        -object sev-snp-guest,id=sev0,cbitpos=51,reduced-phys-bits=1,policy=0x30000
+        # -monitor unix:qemu-monitor-socket,server,nowait
+
+# UEFI Simple Network Protocol available
+QEMU_SNP_DISK ?= qemu-system-x86_64 \
         -enable-kvm -cpu host,invtsc=on -smp $(SMP) \
         -machine q35,confidential-guest-support=sev0,vmport=off,memory-backend=ram1 \
         -object memory-backend-memfd,id=ram1,size=4G,share=true,prealloc=false \
@@ -40,6 +54,7 @@ QEMU_SNP ?= qemu-system-x86_64 \
         -device virtio-net-pci,netdev=net0 -netdev tap,id=net0,ifname=tap0,script=no,downscript=no \
         -object sev-snp-guest,id=sev0,cbitpos=51,reduced-phys-bits=1,policy=0x30000
         # -monitor unix:qemu-monitor-socket,server,nowait
+
 
 .PHONY: clean
 
@@ -58,6 +73,10 @@ qemu: $(APP).efi
 qemu-snp: $(APP).efi
 	mkdir -p $(CURDIR)/qemu-disk/efi/boot && cp $(CURDIR)/$(APP).efi $(CURDIR)/qemu-disk/efi/boot/bootx64.efi
 	$(QEMU_SNP)
+
+qemu-snp-disk: $(APP).efi
+	mkdir -p $(CURDIR)/qemu-disk/efi/boot && cp $(CURDIR)/$(APP).efi $(CURDIR)/qemu-disk/efi/boot/bootx64.efi
+	$(QEMU_SNP_DISK)
 
 qemu-gdb: GOFLAGS := $(GOFLAGS:-w=)
 qemu-gdb: GOFLAGS := $(GOFLAGS:-s=)

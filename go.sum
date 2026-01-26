@@ -44,6 +44,8 @@ github.com/usbarmory/tamago v1.25.7-0.20260124134515-00899b00f8c9 h1:0VUdcHp1TqB
 github.com/usbarmory/tamago v1.25.7-0.20260124134515-00899b00f8c9/go.mod h1:jZIgiYSQmVoZyxvzHmzamNi36eZv790/5SO6lhds+W4=
 github.com/usbarmory/tamago-example v0.0.0-20251202214345-da8b8135e043 h1:R6KP83fMWpqe/X/Zf3on1/4F8ErflZfeEhUpiqs5Uts=
 github.com/usbarmory/tamago-example v0.0.0-20251202214345-da8b8135e043/go.mod h1:j0m1BlRPTuYzDhu2Y7qvJyyEFI8QaOy9LFG4GetwRas=
+github.com/usbarmory/virtio-net v0.0.0-20250828102850-00cf9e4c20da h1:3jvGVOZB7DF9HNdiXZRzMwm//z935AOb9Oge+emUaJg=
+github.com/usbarmory/virtio-net v0.0.0-20250828102850-00cf9e4c20da/go.mod h1:Ox6pqVZbYx8slRdVru3c7VmUkMPjWe0IhIpjWQX9DXU=
 go.uber.org/multierr v1.11.0 h1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=
 go.uber.org/multierr v1.11.0/go.mod h1:20+QtiLqy0Nd6FdQB9TLXag12DsQkrbs3htMFfDN80Y=
 golang.org/x/crypto v0.42.0 h1:chiH31gIWm57EkTXpwnqf8qeuMUi0yekh6mT2AvFlqI=

@@ -10,6 +10,7 @@ require (
 	github.com/usbarmory/go-net v0.0.0-20251003201608-93d9ffe808de
 	github.com/usbarmory/tamago v1.25.7-0.20260124134515-00899b00f8c9
 	github.com/usbarmory/tamago-example v0.0.0-20251202214345-da8b8135e043
+	github.com/usbarmory/virtio-net v0.0.0-20250828102850-00cf9e4c20da
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20251210140736-7dacc380ba00
 )
 

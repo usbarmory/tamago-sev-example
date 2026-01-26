@@ -27,9 +27,14 @@ import (
 	"github.com/usbarmory/go-boot/uefi/x64"
 )
 
+const (
+	VIRTIO_NET_PCI_VENDOR = 0x1ae0 // Google, Inc.
+	VIRTIO_NET_PCI_DEVICE = 0x0042 // Compute Engine Virtual Ethernet [gVNIC]
+)
+
 func init() {
 	shell.Add(shell.Cmd{
-		Name: "gvnic",
+		Name: "net-gve",
 		Help: "start gVNIC networking",
 		Fn:   gvnicCmd,
 	})

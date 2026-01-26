@@ -71,7 +71,9 @@ func sevCmd(_ *shell.Interface, _ []string) (res string, err error) {
 		err = nil
 	}()
 
-	features = sev.Features(x64.AMD64)
+	if features == nil {
+		features = sev.Features(x64.AMD64)
+	}
 
 	fmt.Fprintf(&buf, "SEV ................: %v\n", features.SEV.SEV)
 	fmt.Fprintf(&buf, "SEV-ES .............: %v\n", features.SEV.ES)
@@ -90,11 +92,13 @@ func sevCmd(_ *shell.Interface, _ []string) (res string, err error) {
 	fmt.Fprintf(&buf, "SNP Version ........: %d\n\n", snp.Version)
 	fmt.Fprintf(&buf, "Secrets Page .......: %#x (%d bytes)\n", snp.SecretsPagePhysicalAddress, snp.SecretsPageSize)
 
-	secrets = &sev.SecretsPage{}
+	if secrets == nil {
+		secrets = &sev.SecretsPage{}
 
-	if err = secrets.Init(uint(snp.SecretsPagePhysicalAddress), int(snp.SecretsPageSize)); err != nil {
-		fmt.Fprintf(&buf, " could not initialize AMD SEV-SNP secrets, %v", err)
-		return
+		if err = secrets.Init(uint(snp.SecretsPagePhysicalAddress), int(snp.SecretsPageSize)); err != nil {
+			fmt.Fprintf(&buf, " could not initialize AMD SEV-SNP secrets, %v", err)
+			return
+		}
 	}
 
 	fmt.Fprintf(&buf, "Secrets Version ....: %d\n", secrets.Version)
