@@ -83,6 +83,10 @@ func sevCmd(_ *shell.Interface, _ []string) (res string, err error) {
 		return
 	}
 
+	if x64.Console.Out == 0 {
+		return "", fmt.Errorf("EFI boot services not available")
+	}
+
 	if snp, err = x64.UEFI.GetSNPConfiguration(); err != nil {
 		fmt.Fprintf(&buf, " could not find AMD SEV-SNP pages, %v", err)
 		return
