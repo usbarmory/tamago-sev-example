@@ -236,10 +236,6 @@ func resetCmd(_ *shell.Interface, arg []string) (_ string, err error) {
 		resetType = uefi.EfiResetShutdown
 	}
 
-	if x64.Console.Out == 0 {
-		return "", fmt.Errorf("EFI boot services not available")
-	}
-
 	log.Printf("performing system reset type %d", resetType)
 	err = x64.UEFI.Runtime.ResetSystem(resetType)
 
@@ -281,10 +277,6 @@ func efivarCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	var name string
 
 	verbose := arg[0] == "verbose"
-
-	if x64.Console.Out == 0 {
-		return "", fmt.Errorf("EFI boot services not available")
-	}
 
 	for {
 		if err = x64.UEFI.Runtime.GetNextVariableName(&name, &guid); err != nil {
