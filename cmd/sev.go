@@ -10,6 +10,8 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"log"
+	"net"
 	"regexp"
 
 	"github.com/google/go-sev-guest/verify"
@@ -210,8 +212,15 @@ func attestationCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	fmt.Fprintf(&buf, "SignatureS .........: %x\n", report.Signature[72:72+48])
 
 	if arg[0] == "verify" {
-		err := verify.RawSnpReport(report.Bytes(), verify.DefaultOptions())
-		fmt.Fprintf(&buf, "Verification errors : %v\n", err)
+		if net.SocketFunc == nil {
+			fmt.Fprintf(&buf, "Verification errors : network unavailable\n")
+		} else {
+			log.Printf("** requesting on-line report verification in background **")
+			go func() {
+				err := verify.RawSnpReport(report.Bytes(), verify.DefaultOptions())
+				log.Printf("Verification result : %v\n", err)
+			}()
+		}
 	}
 
 	return buf.String(), nil

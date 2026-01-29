@@ -59,10 +59,23 @@ Secrets Page .......: 0x80d000 (4096 bytes)
 Secrets Version ....: 4
 TSC Factor .........: 0xc8
 Launch Mitigations .: 0xb
-VMPCK0 .............: 0xd9 -- 0x0d
-VMPCK1 .............: 0x1a -- 0xb6
-VMPCK2 .............: 0x98 -- 0xe5
-VMPCK3 .............: 0xd8 -- 0x56
+VMPCK0 .............: 0x08 -- 0x4c
+VMPCK1 .............: 0xd7 -- 0x99
+VMPCK2 .............: 0x45 -- 0x86
+VMPCK3 .............: 0xd5 -- 0xa0
+
+> sev-report
+Version ............: 5
+VMPL ...............: 0
+SignatureAlgo ......: 1
+CurrentTCB .........: 1b1b00000000000a
+Measurement ........: 81aee09d5c062ee862df833df9865a7bd54605e8dcbba8690c4bade521916c59234edeaad51ee801b09086878e6b13b9
+ReportedTCB ........: 1b1b00000000000a
+CommittedTCB .......: 1b1b00000000000a
+Launch  Mitigations : 0xb
+Current Mitigations : 0xb
+SignatureR .........: 1e6da2bac3327aedfa27fb675b92289d8a76ab8d1fa61b0d5c66d25b4e54c32a55f5fbd651137b7a820cc5b4a068ffea
+SignatureS .........: 94cb3a662bd72146e3e31ba0a776f1b3ccba192c9d714d1631ac94d6cc3df9f9334b023e8bd3381cb32379ad45879cde
 ```
 
 Compiling
@@ -124,9 +137,8 @@ Cloud deployments
 =================
 
 The following example demonstrates how to create, and deploy, a UEFI-bootable
-image for cloud deployments:
+image for confidential cloud deployments:
 
-* [Google Compute Engine](https://github.com/usbarmory/go-boot/wiki/Google-Compute-Engine)
 * [Google Compute Engine - Confidential VM (AMD SEV-SNP)](https://github.com/usbarmory/go-boot/wiki/Google-Compute-Engine-(AMD-SEV%E2%80%90SNP))
 
 Networking
