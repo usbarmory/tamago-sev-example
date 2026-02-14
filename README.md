@@ -45,6 +45,7 @@ sev-tsc                                   # AMD SEV-SNP TSC information
 stack                                     # goroutine stack trace (current)
 stackall                                  # goroutine stack trace (all)
 stat            <path>                    # show file information
+terminate                                 # exit EFI Boot Services
 uefi                                      # UEFI information
 uptime                                    # show system running time
 
