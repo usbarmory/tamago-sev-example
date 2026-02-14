@@ -11,7 +11,7 @@ IMAGE_BASE := 10000000
 TEXT_START := $(shell echo $$((16#$(IMAGE_BASE) + 16#10000)))
 LDFLAGS := -s -w -E cpuinit -T $(TEXT_START) -R 0x1000 -X 'main.Console=${CONSOLE}'
 GOFLAGS := -tags ${BUILD_TAGS} -trimpath -ldflags "${LDFLAGS}"
-GOENV := GOOS=tamago GOARCH=amd64
+GOENV := GOOS=tamago GOOSPKG=github.com/usbarmory/tamago GOARCH=amd64
 
 OVMF ?= OVMF.amdsev.fd
 OVMFCODE ?= OVMF_CODE.fd
@@ -103,7 +103,7 @@ $(APP): check_tamago
 $(APP).efi: $(APP)
 	objcopy \
 		--strip-debug \
-		--target efi-app-x86_64 \
+		--output-target efi-app-x86_64 \
 		--subsystem=efi-app \
 		--image-base 0x$(IMAGE_BASE) \
 		--stack=0x10000 \
