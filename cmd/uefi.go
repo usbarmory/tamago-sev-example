@@ -79,9 +79,9 @@ func init() {
 	})
 
 	shell.Add(shell.Cmd{
-		Name:    "terminate",
-		Help:    "exit EFI Boot Services",
-		Fn:      terminateCmd,
+		Name: "terminate",
+		Help: "exit EFI Boot Services",
+		Fn:   terminateCmd,
 	})
 
 	shell.Add(shell.Cmd{
@@ -253,7 +253,7 @@ func terminateCmd(_ *shell.Interface, _ []string) (_ string, err error) {
 		return "", fmt.Errorf("EFI boot services not available")
 	}
 
-	for i := 0; i < exitRetries; i++ {
+	for range exitRetries {
 		if _, err = x64.UEFI.Boot.ExitBootServices(); err != nil {
 			log.Print("exiting EFI boot services (retrying)")
 			continue
