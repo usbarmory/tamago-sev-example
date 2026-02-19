@@ -7,12 +7,9 @@ package cmd
 
 import (
 	"fmt"
-	"io"
-	"log"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
-	"os"
 	"regexp"
 	"strings"
 
@@ -101,17 +98,7 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		fmt.Printf("\thttp://%s:80/debug/pprof\n", ip)
 		fmt.Printf("\tssh://%s:22\n", ip)
 
-		ssh.Handle(func(s ssh.Session) {
-			c := &shell.Interface{
-				Banner:     Banner,
-				ReadWriter: s,
-			}
-
-			log.SetOutput(io.MultiWriter(os.Stdout, s))
-			defer log.SetOutput(os.Stdout)
-
-			c.Start(true)
-		})
+		ssh.Handle(sessionHandler)
 
 		go ssh.ListenAndServe(":22", nil)
 		go http.ListenAndServe(":80", nil)
