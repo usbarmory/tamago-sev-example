@@ -7,15 +7,18 @@ package cmd
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
+	"os"
 	"regexp"
 	"strings"
 
-	"github.com/usbarmory/tamago/soc/intel/pci"
 	"github.com/usbarmory/tamago/kvm/sev"
 	"github.com/usbarmory/tamago/kvm/virtio"
+	"github.com/usbarmory/tamago/soc/intel/pci"
 
 	"github.com/usbarmory/go-boot/shell"
 	"github.com/usbarmory/go-boot/uefi/x64"
@@ -59,7 +62,7 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		VIRTIO_NET_PCI_LEGACY_DEVICE,
 	); device != nil {
 		nic = &vnet.Net{
-			Transport:    &virtio.LegacyPCI{
+			Transport: &virtio.LegacyPCI{
 				Device: device,
 			},
 			HeaderLength: 10,
@@ -70,7 +73,7 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		VIRTIO_NET_PCI_MODERN_DEVICE,
 	); device != nil {
 		nic = &vnet.Net{
-			Transport:    &virtio.PCI{
+			Transport: &virtio.PCI{
 				Device: device,
 			},
 			HeaderLength: 10,
@@ -103,6 +106,10 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 				Banner:     Banner,
 				ReadWriter: s,
 			}
+
+			log.SetOutput(io.MultiWriter(os.Stdout, s))
+			defer log.SetOutput(os.Stdout)
+
 			c.Start(true)
 		})
 
