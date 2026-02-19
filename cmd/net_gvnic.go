@@ -19,10 +19,10 @@ import (
 
 // Google Virtual Private Cloud (GCP) - europe-west3
 const (
-	MAC      = "42:01:0a:84:00:02"
-	Netmask  = "255.255.255.0"
-	IP       = "10.156.0.2"
-	Gateway  = "10.156.0.1"
+	MAC     = "42:01:0a:84:00:02"
+	Netmask = "255.255.255.0"
+	IP      = "10.156.0.2"
+	Gateway = "10.156.0.1"
 )
 
 func init() {
