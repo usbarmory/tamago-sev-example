@@ -3,6 +3,7 @@
 # Use of this source code is governed by the license
 # that can be found in the LICENSE file.
 
+TAMAGO ?= $(shell go tool -n github.com/usbarmory/tamago/cmd/tamago)
 BUILD_TAGS = linkcpuinit,linkramsize,linkramstart,linkprintk
 SHELL = /bin/bash
 APP ?= tamago-sev-example

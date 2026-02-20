@@ -2,6 +2,8 @@ module github.com/usbarmory/tamago-sev-example
 
 go 1.26.0
 
+tool github.com/usbarmory/tamago/cmd/tamago
+
 require (
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/go-sev-guest v0.14.1
