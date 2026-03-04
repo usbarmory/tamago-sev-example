@@ -2,10 +2,13 @@ Introduction
 ============
 
 This project showcases a network [TamaGo](https://github.com/usbarmory/tamago)
-UEFI unikernel for execution under [AMD Secure Encrypted Virtualization
-(SEV)](https://www.qemu.org/docs/master/system/i386/amd-memory-encryption.html)
-using [QEMU](https://www.qemu.org/) or [Google Compute
-Engine](https://cloud.google.com/products/compute).
+UEFI unikernel for execution under
+[AMD Secure Encrypted Virtualization (SEV)](https://www.qemu.org/docs/master/system/i386/amd-memory-encryption.html)
+using [QEMU](https://www.qemu.org/) or
+[Google Compute Engine](https://cloud.google.com/products/compute).
+
+It is based, and depends on, the
+[go-boot](https://github.com/usbarmory/go-boot) code base.
 
 Operation
 =========
