@@ -21,8 +21,6 @@ import (
 	"github.com/usbarmory/go-boot/shell"
 )
 
-const testDiversifier = "\xde\xad\xbe\xef"
-
 var (
 	Banner   string
 	Resolver = "8.8.8.8:53"
