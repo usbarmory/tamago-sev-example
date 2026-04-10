@@ -42,6 +42,8 @@ github.com/usbarmory/go-net v0.0.0-20251003201608-93d9ffe808de h1:5O20CXXbFwjrqy
 github.com/usbarmory/go-net v0.0.0-20251003201608-93d9ffe808de/go.mod h1:+6WiKCFJtJQZdNM2VpwQsYGo/aBJ39pN7nWx6Td3Z8s=
 github.com/usbarmory/tamago v1.26.1 h1:ZJkxM/+qNZTO631bJz5x/flhYb/ww1ura4H2BrZbX5I=
 github.com/usbarmory/tamago v1.26.1/go.mod h1:7x0kUe5eE9S1z7Pi/C9RjF8E4JHWzqnE4cKzGl0hyug=
+github.com/usbarmory/tamago v1.26.2 h1:lSB+tnxVAUFczwBu3oVkoAwJriFrxtQ7x/8Tu6lRQUc=
+github.com/usbarmory/tamago v1.26.2/go.mod h1:+p26O/6sbXO3PWWC22bFEuK4qDBmNzW4EgtXfE+kgyQ=
 github.com/usbarmory/virtio-net v0.0.0-20250916125519-733a429bd100 h1:7y4lkfEGpBJFYyxyRKOUeliYntaRmZ/ZASVQ1S8kJ9Y=
 github.com/usbarmory/virtio-net v0.0.0-20250916125519-733a429bd100/go.mod h1:Ox6pqVZbYx8slRdVru3c7VmUkMPjWe0IhIpjWQX9DXU=
 go.uber.org/multierr v1.11.0 h1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=
