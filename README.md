@@ -37,7 +37,7 @@ lspci                                     # list PCI devices
 msr             <hex addr>                # read model-specific register
 net-gve                                   # start gVNIC networking
 net-uefi        <ip> <mac> <gw> (debug)?  # start UEFI networking
-net-virtio      <ip> <mask> <gw> (debug)? # start VirtIO networking
+net-virtio      <ip> <mac> <gw> (debug)?  # start VirtIO networking
 peek            <hex addr> <size>         # memory display (use with caution)
 poke            <hex addr> <hex value>    # memory write   (use with caution)
 reset           (cold|warm)?              # reset system
@@ -151,15 +151,17 @@ image for confidential cloud deployments:
 Networking
 ==========
 
-The following sections illustrate the network options available depending on
-the KVM configuration.
+Different networking interfaces are available depending on the KVM
+configuration.
 
-For all `net-*` commands the optional `debug` strings can be passed as final
-argument to enable Go [profiling server](https://pkg.go.dev/net/http/pprof) and
-an unauthenticated SSH console exposing the unikernel shell.
+The `net-*` commands take an IP address in CIDR notation, a fixed MAC address
+or `:` to automatically generate a random MAC, and a gateway IP address as
+arguments. The optional `debug` strings can be passed as final argument to
+enable Go [profiling server](https://pkg.go.dev/net/http/pprof) and an
+unauthenticated SSH console exposing the unikernel shell.
 
 ```
-> net-virtio 10.0.0.1 255.255.255.0 10.0.0.2 debug
+> net-virtio 10.0.0.1/24 : 10.0.0.2 debug
 starting debug servers:
         http://10.0.0.1:80/debug/pprof
         ssh://10.0.0.1:22
@@ -175,14 +177,6 @@ VirtIO networking
 When running under any QEMU target, VirtIO networking is available through the
 `net-virtio` command.
 
-The command takes an IP address, a network mask, and a gateway IP address as
-arguments.
-
-```
-> net-virtio 10.0.0.1 255.255.255.0 10.0.0.2
-> network initialized (10.0.0.1 42010a840002)
-```
-
 UEFI networking
 ---------------
 
@@ -190,23 +184,11 @@ When running under QEMU with the unikernel loaded from a disk image (e.g. `make
 qemu` or `make qemu-snp-disk` targets), UEFI Simple Nework Protocol is
 available through the `net-uefi` command.
 
-The command takes an IP address in CIDR notation, a fixed MAC address or `:` to
-automatically generate a random MAC, and a gateway IP address as arguments.
-
-```
-> net-uefi 10.0.0.1/24 : 10.0.0.2
-network initialized (10.0.0.1/24 da:e7:ac:e2:5e:05)
-```
-
 Google Virtual NIC (gVNIC)
 --------------------------
 
-> [!WARNING]
-> this is a work in progress, not yet operational
-
-When running under  [Google Compute
-Engine](https://cloud.google.com/products/compute) gVNIC support is available
-through the `net-gve` command.
+When running under  [Google Compute Engine](https://cloud.google.com/products/compute)
+gVNIC support is available through the `net-gve` command.
 
 Debugging
 =========

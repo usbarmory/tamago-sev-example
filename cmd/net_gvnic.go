@@ -12,9 +12,11 @@ import (
 	_ "net/http/pprof"
 
 	"github.com/usbarmory/tamago/kvm/gvnic"
+	"github.com/usbarmory/tamago/kvm/sev"
 	"github.com/usbarmory/tamago/soc/intel/pci"
 
 	"github.com/usbarmory/go-boot/shell"
+	"github.com/usbarmory/go-boot/uefi/x64"
 )
 
 // Google Virtual Private Cloud (GCP) - europe-west3
@@ -34,6 +36,12 @@ func init() {
 }
 
 func gvnicCmd(console *shell.Interface, arg []string) (res string, err error) {
+	if !sev.Features(x64.AMD64).SEV.SEV {
+		x64.AllocateDMA(10 << 20)
+	} else if err = initGHCB(); err != nil {
+		return "", fmt.Errorf("could not initialize GHCB, %v", err)
+	}
+
 	gve := &gvnic.GVE{
 		Device: pci.Probe(
 			0,
@@ -43,7 +51,7 @@ func gvnicCmd(console *shell.Interface, arg []string) (res string, err error) {
 	}
 
 	if err = gve.Init(); err != nil {
-		return
+		return "", fmt.Errorf("%+v %v", gve.Info, err)
 	}
 
 	return fmt.Sprintf("network initialized (%s)\n", gve.MAC()), nil

@@ -9,9 +9,8 @@ require (
 	github.com/google/go-sev-guest v0.14.1
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/usbarmory/go-boot v1.5.2-0.20260211132531-f6dde5ac2fc9
-	github.com/usbarmory/go-net v0.0.0-20251003201608-93d9ffe808de
-	github.com/usbarmory/tamago v1.26.2
-	github.com/usbarmory/virtio-net v0.0.0-20250916125519-733a429bd100
+	github.com/usbarmory/go-net v0.0.0-20260414134625-ef20c36a0f3f
+	github.com/usbarmory/tamago v1.26.3-0.20260414131637-e7d4ff8486be
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20260213171211-a408498e5541
 )
 

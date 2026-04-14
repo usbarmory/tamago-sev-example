@@ -20,8 +20,10 @@ import (
 	"github.com/usbarmory/go-boot/shell"
 	"github.com/usbarmory/go-boot/uefi/x64"
 
+	"github.com/usbarmory/go-net"
+	"github.com/usbarmory/go-net/virtio"
+
 	"github.com/gliderlabs/ssh"
-	"github.com/usbarmory/virtio-net"
 )
 
 const (
@@ -37,22 +39,13 @@ func init() {
 		Name:    "net-virtio",
 		Args:    4,
 		Pattern: regexp.MustCompile(`^net-virtio (\S+) (\S+) (\S+)( debug)?$`),
-		Syntax:  "<ip> <mask> <gw> (debug)?",
+		Syntax:  "<ip> <mac> <gw> (debug)?",
 		Help:    "start VirtIO networking",
 		Fn:      virtioNetCmd,
 	})
 }
 
-func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
-	var nic *vnet.Net
-	iface := vnet.Interface{}
-
-	if !sev.Features(x64.AMD64).SEV.SEV {
-		x64.AllocateDMA(2 << 20)
-	} else if err = initGHCB(); err != nil {
-		return "", fmt.Errorf("could not initialize GHCB, %v", err)
-	}
-
+func probeNIC() (nic *vnet.Net) {
 	if device := pci.Probe(
 		0,
 		VIRTIO_NET_PCI_VENDOR,
@@ -62,7 +55,6 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 			Transport: &virtio.LegacyPCI{
 				Device: device,
 			},
-			HeaderLength: 10,
 		}
 	} else if device := pci.Probe(
 		0,
@@ -73,23 +65,51 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 			Transport: &virtio.PCI{
 				Device: device,
 			},
-			HeaderLength: 10,
 		}
 	}
 
-	if nic == nil {
+	return
+}
+
+func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
+	var nic *vnet.Net
+
+	if nic = probeNIC(); nic == nil {
 		return "", fmt.Errorf("could not find VirtIO network device")
+	}
+
+	nic.HeaderLength = 10
+	nic.MTU = gnet.MTU
+
+	if !sev.Features(x64.AMD64).SEV.SEV {
+		x64.AllocateDMA(10 << 20)
+	} else if err = initGHCB(); err != nil {
+		return "", fmt.Errorf("could not initialize GHCB, %v", err)
+	}
+
+	if err := nic.Init(); err != nil {
+		return "", fmt.Errorf("could not initialize VirtIO device, %v", err)
+	}
+
+	iface := gnet.Interface{}
+
+	if arg[1] == ":" {
+		arg[1] = ""
 	}
 
 	if err := iface.Init(nic, arg[0], arg[1], arg[2]); err != nil {
 		return "", fmt.Errorf("could not initialize networking, %v", err)
 	}
 
-	iface.EnableICMP()
-	go nic.Start(true) // TODO: IRQs
+	if err = iface.Stack.EnableICMP(); err != nil {
+		return "", fmt.Errorf("could not enable ICMP, %v", err)
+	}
 
 	// hook interface into Go runtime
-	net.SocketFunc = iface.Socket
+	net.SocketFunc = iface.Stack.Socket
+
+	nic.Start()
+	go iface.Start()
 
 	if len(arg[3]) > 0 {
 		ip, _, _ := strings.Cut(arg[0], `/`)
@@ -104,5 +124,7 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		go http.ListenAndServe(":80", nil)
 	}
 
-	return fmt.Sprintf("network initialized (%s %x)\n", arg[0], nic.Config().MAC), nil
+	mac, _ := iface.Stack.HardwareAddress()
+
+	return fmt.Sprintf("network initialized (%s %s)\n", arg[0], mac), nil
 }

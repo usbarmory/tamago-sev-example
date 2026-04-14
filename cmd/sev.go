@@ -171,7 +171,7 @@ func initGHCB() (err error) {
 		return
 	}
 
-	if err = initSharedDMA(1 << 20); err != nil {
+	if err = initSharedDMA(10 << 20); err != nil {
 		return fmt.Errorf("could not allocate shared DMA region, %v", err)
 	}
 
