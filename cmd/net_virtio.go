@@ -91,13 +91,15 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		return "", fmt.Errorf("could not initialize VirtIO device, %v", err)
 	}
 
-	iface := gnet.Interface{}
+	iface := gnet.Interface{
+		NetworkDevice: nic,
+	}
 
 	if arg[1] == ":" {
 		arg[1] = ""
 	}
 
-	if err := iface.Init(nic, arg[0], arg[1], arg[2]); err != nil {
+	if err := iface.Init(arg[0], arg[1], arg[2]); err != nil {
 		return "", fmt.Errorf("could not initialize networking, %v", err)
 	}
 

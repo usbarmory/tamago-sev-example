@@ -8,10 +8,10 @@ require (
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/go-sev-guest v0.14.1
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
-	github.com/usbarmory/go-boot v1.5.2-0.20260211132531-f6dde5ac2fc9
-	github.com/usbarmory/go-net v0.0.0-20260414134625-ef20c36a0f3f
-	github.com/usbarmory/tamago v1.26.3-0.20260414131637-e7d4ff8486be
-	golang.org/x/crypto/x509roots/fallback v0.0.0-20260213171211-a408498e5541
+	github.com/usbarmory/go-boot v1.6.2
+	github.com/usbarmory/go-net v0.0.0-20260416163630-1078311e0956
+	github.com/usbarmory/tamago v1.26.3-0.20260426085542-c01f01e9c300
+	golang.org/x/crypto/x509roots/fallback v0.0.0-20260423152011-b9e53593a607
 )
 
 require (
