@@ -7,14 +7,17 @@ package cmd
 
 import (
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
 	"regexp"
+	"runtime/goos"
 	"strings"
 
 	"github.com/usbarmory/tamago/kvm/sev"
 	"github.com/usbarmory/tamago/kvm/virtio"
+	"github.com/usbarmory/tamago/soc/intel/ioapic"
 	"github.com/usbarmory/tamago/soc/intel/pci"
 
 	"github.com/usbarmory/go-boot/shell"
@@ -32,6 +35,10 @@ const (
 	// Virtio 1.0 network device
 	VIRTIO_NET_PCI_LEGACY_DEVICE = 0x1000
 	VIRTIO_NET_PCI_MODERN_DEVICE = 0x1041
+
+	VIRTIO_NET_IRQ = 22
+	// redirection vector for IOAPIC IRQ to CPU IRQ
+	vector = 32
 )
 
 func init() {
@@ -46,25 +53,27 @@ func init() {
 }
 
 func probeNIC() (nic *vnet.Net) {
+	nic = &vnet.Net{
+		IRQ:          VIRTIO_NET_IRQ,
+		MTU:          gnet.MTU,
+		HeaderLength: 10,
+	}
+
 	if device := pci.Probe(
 		0,
 		VIRTIO_NET_PCI_VENDOR,
 		VIRTIO_NET_PCI_LEGACY_DEVICE,
 	); device != nil {
-		nic = &vnet.Net{
-			Transport: &virtio.LegacyPCI{
-				Device: device,
-			},
+		nic.Transport = &virtio.LegacyPCI{
+			Device: device,
 		}
 	} else if device := pci.Probe(
 		0,
 		VIRTIO_NET_PCI_VENDOR,
 		VIRTIO_NET_PCI_MODERN_DEVICE,
 	); device != nil {
-		nic = &vnet.Net{
-			Transport: &virtio.PCI{
-				Device: device,
-			},
+		nic.Transport = &virtio.PCI{
+			Device: device,
 		}
 	}
 
@@ -72,14 +81,11 @@ func probeNIC() (nic *vnet.Net) {
 }
 
 func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
-	var nic *vnet.Net
+	nic := probeNIC()
 
-	if nic = probeNIC(); nic == nil {
+	if nic == nil {
 		return "", fmt.Errorf("could not find VirtIO network device")
 	}
-
-	nic.HeaderLength = 10
-	nic.MTU = gnet.MTU
 
 	if !sev.Features(x64.AMD64).SEV.SEV {
 		x64.AllocateDMA(10 << 20)
@@ -91,7 +97,7 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		return "", fmt.Errorf("could not initialize VirtIO device, %v", err)
 	}
 
-	iface := gnet.Interface{
+	iface := &gnet.Interface{
 		NetworkDevice: nic,
 	}
 
@@ -103,22 +109,28 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		return "", fmt.Errorf("could not initialize networking, %v", err)
 	}
 
-	if err = iface.Stack.EnableICMP(); err != nil {
-		return "", fmt.Errorf("could not enable ICMP, %v", err)
-	}
+	iface.Stack.EnableICMP()
 
 	// hook interface into Go runtime
 	net.SocketFunc = iface.Stack.Socket
 
+	if x64.UEFI.Console.Out == 0 {
+		// UEFI previosly terminated, use IRQs
+		nic.Transport.EnableInterrupt(vector, vnet.ReceiveQueue)
+		go startInterruptHandler(nic, iface)
+	} else {
+		// UEFI active, poll
+		go iface.Start()
+	}
+
 	nic.Start()
-	go iface.Start()
 
 	if len(arg[3]) > 0 {
 		ip, _, _ := strings.Cut(arg[0], `/`)
 
-		fmt.Printf("starting debug servers:\n")
-		fmt.Printf("\thttp://%s:80/debug/pprof\n", ip)
-		fmt.Printf("\tssh://%s:22\n", ip)
+		log.Printf("starting debug servers:\n")
+		log.Printf("\thttp://%s:80/debug/pprof\n", ip)
+		log.Printf("\tssh://%s:22\n", ip)
 
 		ssh.Handle(sessionHandler)
 
@@ -129,4 +141,56 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	mac, _ := iface.Stack.HardwareAddress()
 
 	return fmt.Sprintf("network initialized (%s %s)\n", arg[0], mac), nil
+}
+
+func startInterruptHandler(dev *vnet.Net, iface *gnet.Interface) {
+	if dev == nil || iface == nil {
+		return
+	}
+
+	cpu := x64.AMD64
+
+	if cpu.LAPIC != nil {
+		cpu.LAPIC.Enable()
+	}
+
+	ioapic := &ioapic.IOAPIC{
+		Base: 0xfec00000,
+	}
+
+	ioapic.EnableInterrupt(dev.IRQ, vector)
+
+	// as IRQs are enabled, favor slicing dev.ReceiveWithHeader, opposed to
+	// dev.Receive for better performance
+	size := dev.HeaderLength + gnet.EthernetMaximumSize + gnet.MTU
+	buf := make([]byte, size)
+
+	isr := func(irq int) {
+		switch irq {
+		case vector:
+			for {
+				if n, err := dev.ReceiveWithHeader(buf); err != nil || n == 0 {
+					return
+				}
+
+				iface.Stack.RecvInboundPacket(buf[dev.HeaderLength:])
+			}
+		default:
+			log.Printf("internal error, unexpected IRQ %d", irq)
+		}
+	}
+
+	// optimize CPU idle management as IRQs are enabled
+	goos.Idle = func(pollUntil int64) {
+		if pollUntil == 0 {
+			return
+		}
+
+		cpu.SetAlarm(pollUntil)
+		cpu.WaitInterrupt()
+		cpu.SetAlarm(0)
+	}
+
+	cpu.ClearInterrupt()
+	cpu.ServiceInterrupts(isr)
 }

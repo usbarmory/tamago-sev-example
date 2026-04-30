@@ -268,6 +268,15 @@ func terminateCmd(_ *shell.Interface, _ []string) (_ string, err error) {
 	// silence EFI Simple Text console
 	x64.Console.Out = 0
 
+	// replace runtime standard output
+	x64.Stdout = x64.UART0.Tx
+
+	// trap CPU exceptions
+	x64.AMD64.EnableExceptions()
+
+	// initialize APs (TODO)
+	// x64.AMD64.InitSMP(-1)
+
 	return
 }
 

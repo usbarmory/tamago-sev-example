@@ -85,10 +85,7 @@ func netCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		fmt.Errorf("could not set permanent station address, %v\n", err)
 	}
 
-	if err = iface.Stack.EnableICMP(); err != nil {
-		return "", fmt.Errorf("could not enable ICMP, %v", err)
-	}
-
+	iface.Stack.EnableICMP()
 	go iface.Start()
 
 	// hook interface into Go runtime
