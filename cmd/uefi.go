@@ -274,8 +274,8 @@ func terminateCmd(_ *shell.Interface, _ []string) (_ string, err error) {
 	// trap CPU exceptions
 	x64.AMD64.EnableExceptions()
 
-	// initialize APs (TODO)
-	// x64.AMD64.InitSMP(-1)
+	// initialize APs
+	x64.AMD64.InitSMP(-1)
 
 	return
 }

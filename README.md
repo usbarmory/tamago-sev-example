@@ -41,6 +41,7 @@ net-virtio      <ip> <mac> <gw> (debug)?  # start VirtIO networking
 peek            <hex addr> <size>         # memory display (use with caution)
 poke            <hex addr> <hex value>    # memory write   (use with caution)
 reset           (cold|warm)?              # reset system
+smp             <n>                       # launch SMP test
 sev                                       # AMD SEV-SNP information
 sev-kdf                                   # AMD SEV-SNP key derivation
 sev-report      (raw|verify)?             # AMD SEV-SNP attestation report

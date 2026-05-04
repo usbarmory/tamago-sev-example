@@ -10,7 +10,7 @@ require (
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/usbarmory/go-boot v1.6.3-0.20260429115841-b9bf16a8cc3f
 	github.com/usbarmory/go-net v0.0.0-20260416163630-1078311e0956
-	github.com/usbarmory/tamago v1.26.3-0.20260430131709-b757d2d7b0b7
+	github.com/usbarmory/tamago v1.26.3-0.20260504131753-dd5192b015b5
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20260423152011-b9e53593a607
 )
 
