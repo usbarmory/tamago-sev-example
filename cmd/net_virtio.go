@@ -114,14 +114,16 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	// hook interface into Go runtime
 	net.SocketFunc = iface.Stack.Socket
 
-	if x64.UEFI.Console.Out == 0 {
-		// UEFI previosly terminated, use IRQs
-		nic.Transport.EnableInterrupt(vector, vnet.ReceiveQueue)
-		go startInterruptHandler(nic, iface)
-	} else {
-		// UEFI active, poll
-		go iface.Start()
-	}
+	go func() {
+		if x64.Console.Out == 0 {
+			// UEFI previosly terminated, use IRQs
+			nic.Transport.EnableInterrupt(vector, vnet.ReceiveQueue)
+			startInterruptHandler(nic, iface)
+		}  else {
+			// UEFI active, poll
+			iface.Start()
+		}
+	}()
 
 	nic.Start()
 
