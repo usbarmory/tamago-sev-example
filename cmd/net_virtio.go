@@ -36,9 +36,8 @@ const (
 	VIRTIO_NET_PCI_LEGACY_DEVICE = 0x1000
 	VIRTIO_NET_PCI_MODERN_DEVICE = 0x1041
 
-	VIRTIO_NET_IRQ = 22
-	// redirection vector for IOAPIC IRQ to CPU IRQ
-	vector = 32
+	// redirection vector for IOAPIC IRQ to CPU IRQ or MSI-X signal
+	VIRTIO_NET_IRQ = 32
 )
 
 func init() {
@@ -117,7 +116,7 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	go func() {
 		if x64.Console.Out == 0 {
 			// UEFI previosly terminated, use IRQs
-			nic.Transport.EnableInterrupt(vector, vnet.ReceiveQueue)
+			nic.Transport.EnableInterrupt(nic.IRQ, vnet.ReceiveQueue)
 			startInterruptHandler(nic, iface)
 		}  else {
 			// UEFI active, poll
@@ -160,7 +159,7 @@ func startInterruptHandler(dev *vnet.Net, iface *gnet.Interface) {
 		Base: 0xfec00000,
 	}
 
-	ioapic.EnableInterrupt(dev.IRQ, vector)
+	ioapic.EnableInterrupt(dev.IRQ, dev.IRQ)
 
 	// as IRQs are enabled, favor slicing dev.ReceiveWithHeader, opposed to
 	// dev.Receive for better performance
@@ -169,7 +168,7 @@ func startInterruptHandler(dev *vnet.Net, iface *gnet.Interface) {
 
 	isr := func(irq int) {
 		switch irq {
-		case vector:
+		case dev.IRQ:
 			for {
 				if n, err := dev.ReceiveWithHeader(buf); err != nil || n == 0 {
 					return
