@@ -192,6 +192,5 @@ func startInterruptHandler(dev *vnet.Net, iface *gnet.Interface) {
 		cpu.SetAlarm(0)
 	}
 
-	cpu.ClearInterrupt()
 	cpu.ServiceInterrupts(isr)
 }
