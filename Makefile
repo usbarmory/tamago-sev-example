@@ -18,7 +18,7 @@ OVMF ?= OVMF.amdsev.fd
 OVMFCODE ?= OVMF_CODE.fd
 LOG ?= qemu.log
 
-SMP ?= 8
+SMP ?= 1
 QEMU ?= qemu-system-x86_64 -machine q35,pit=off,pic=off \
         -m 4G -smp $(SMP) \
         -enable-kvm -cpu host,invtsc=on,kvmclock=on -no-reboot \
