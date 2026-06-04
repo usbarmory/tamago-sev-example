@@ -11,8 +11,10 @@ import (
 	"log"
 
 	"github.com/usbarmory/tamago/soc/intel/ioapic"
+	"github.com/usbarmory/tamago/kvm/sev"
 
 	"github.com/usbarmory/go-boot/shell"
+	"github.com/usbarmory/go-boot/uefi"
 	"github.com/usbarmory/go-boot/uefi/x64"
 
 	"github.com/usbarmory/tamago-sev-example/cmd"
@@ -41,6 +43,16 @@ func main() {
 	// disable UEFI watchdog
 	x64.UEFI.Boot.SetWatchdogTimer(0)
 
+	if sev.Features(x64.AMD64).SEV.SNP {
+		if err := cmd.InitGHCB(); err != nil {
+			log.Printf("could not initialize GHCB, %v", err)
+		}
+	} else {
+		x64.AllocateDMA(10 << 20)
+	}
+
+	x64.InitSMP()
+
 	console := &shell.Interface{
 		Banner:  cmd.Banner,
 		ReadWriter: x64.UART0,
@@ -49,5 +61,7 @@ func main() {
 	// start interactive shell
 	console.Start(true)
 
-	log.Printf("exit")
+	if x64.Console.Out != 0 {
+		x64.UEFI.Runtime.ResetSystem(uefi.EfiResetShutdown)
+	}
 }

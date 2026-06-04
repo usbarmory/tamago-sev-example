@@ -8,14 +8,15 @@ package cmd
 import (
 	"bytes"
 	"crypto/rand"
-	"errors"
 	"fmt"
 	"log"
 	"net"
 	"regexp"
+	"runtime/goos"
 
 	"github.com/google/go-sev-guest/verify"
 
+	"github.com/usbarmory/tamago/amd64"
 	"github.com/usbarmory/tamago/dma"
 	"github.com/usbarmory/tamago/kvm/sev"
 
@@ -25,9 +26,10 @@ import (
 )
 
 var (
+	snp      *uefi.SNPConfigurationTable
 	features *sev.SVMFeatures
-	ghcb     *sev.GHCB
 	secrets  *sev.SecretsPage
+	ghcb     map[uint64]*sev.GHCB
 )
 
 func init() {
@@ -63,61 +65,7 @@ func init() {
 	})
 }
 
-func sevCmd(_ *shell.Interface, _ []string) (res string, err error) {
-	var buf bytes.Buffer
-	var snp *uefi.SNPConfigurationTable
-
-	defer func() {
-		res = buf.String()
-		err = nil
-	}()
-
-	if features == nil {
-		features = sev.Features(x64.AMD64)
-	}
-
-	fmt.Fprintf(&buf, "SEV ................: %v\n", features.SEV.SEV)
-	fmt.Fprintf(&buf, "SEV-ES .............: %v\n", features.SEV.ES)
-	fmt.Fprintf(&buf, "SEV-SNP ............: %v\n", features.SEV.SNP)
-	fmt.Fprintf(&buf, "Encrypted bit ......: %d\n", features.EncryptedBit)
-
-	if !features.SEV.SNP {
-		return
-	}
-
-	if x64.Console.Out == 0 {
-		return "", fmt.Errorf("EFI boot services not available")
-	}
-
-	if snp, err = x64.UEFI.GetSNPConfiguration(); err != nil {
-		fmt.Fprintf(&buf, " could not find AMD SEV-SNP pages, %v", err)
-		return
-	}
-
-	fmt.Fprintf(&buf, "SNP Version ........: %d\n\n", snp.Version)
-	fmt.Fprintf(&buf, "Secrets Page .......: %#x (%d bytes)\n", snp.SecretsPagePhysicalAddress, snp.SecretsPageSize)
-
-	if secrets == nil {
-		secrets = &sev.SecretsPage{}
-
-		if err = secrets.Init(uint(snp.SecretsPagePhysicalAddress), int(snp.SecretsPageSize)); err != nil {
-			fmt.Fprintf(&buf, " could not initialize AMD SEV-SNP secrets, %v", err)
-			return
-		}
-	}
-
-	fmt.Fprintf(&buf, "Secrets Version ....: %d\n", secrets.Version)
-	fmt.Fprintf(&buf, "TSC Factor .........: %#x\n", secrets.TSCFactor)
-	fmt.Fprintf(&buf, "Launch Mitigations .: %#x\n", secrets.LaunchMitVector)
-	fmt.Fprintf(&buf, "VMPCK0 .............: %#02x -- %#02x\n", secrets.VMPCK0[0], secrets.VMPCK0[31])
-	fmt.Fprintf(&buf, "VMPCK1 .............: %#02x -- %#02x\n", secrets.VMPCK1[0], secrets.VMPCK1[31])
-	fmt.Fprintf(&buf, "VMPCK2 .............: %#02x -- %#02x\n", secrets.VMPCK2[0], secrets.VMPCK2[31])
-	fmt.Fprintf(&buf, "VMPCK3 .............: %#02x -- %#02x\n", secrets.VMPCK3[0], secrets.VMPCK3[31])
-
-	return
-}
-
-func initSharedDMA(dmaSize int) (err error) {
+func initSharedDMA(ghcb *sev.GHCB, dmaSize int) (err error) {
 	// align to 2MB page
 	dmaStart := int(x64.RamSize) - dmaSize
 	dmaSize += dmaStart % (2 << 20)
@@ -143,39 +91,114 @@ func initSharedDMA(dmaSize int) (err error) {
 	return x64.AMD64.SetEncryptedBit(start, end, features.EncryptedBit, false)
 }
 
-func initGHCB() (err error) {
-	var ghcbAddr uint64
-
+func InitGHCB() (err error) {
 	if ghcb != nil {
 		return
 	}
 
-	if secrets == nil || secrets.Version == 0 {
-		return errors.New("AMD SEV-SNP secrets unavailable, run `sev` first")
-	}
-
-	// OVMF allocates 2*ncpu contiguous pages, a first shared page for GHCB
-	// (which we re-use) and a second private one for vCPU variables.
-	if ghcbAddr = x64.AMD64.MSR(sev.MSR_AMD_GHCB); ghcbAddr == 0 {
-		return errors.New("could not find GHCB address")
-	}
-
-	ghcbGPA := uint(ghcbAddr)
-	ghcb = &sev.GHCB{}
-
-	if ghcb.Layout, err = dma.NewRegion(ghcbGPA, uefi.PageSize, false); err != nil {
-		return fmt.Errorf("could not allocate GHCB layout page, %v", err)
-	}
-
-	if err = ghcb.Init(); err != nil {
+	if features = sev.Features(x64.AMD64); !features.SEV.SNP {
 		return
 	}
 
-	if err = initSharedDMA(10 << 20); err != nil {
+	if x64.Console.Out == 0 {
+		return fmt.Errorf("EFI boot services not available")
+	}
+
+	if snp, err = x64.UEFI.GetSNPConfiguration(); err != nil {
+		return fmt.Errorf(" could not find AMD SEV-SNP pages, %v", err)
+	}
+
+	secrets = &sev.SecretsPage{}
+
+	if err = secrets.Init(uint(snp.SecretsPagePhysicalAddress), int(snp.SecretsPageSize)); err != nil {
+		return fmt.Errorf(" could not initialize AMD SEV-SNP secrets, %v", err)
+	}
+
+	// map GHCB <> vCPU
+	ghcb = make(map[uint64]*sev.GHCB)
+
+	// initialize vCPU0 GHCB for DMA allocation
+	ghcb[0] = &sev.GHCB{
+		CPU: x64.AMD64,
+	}
+
+	// allocate unencrypted region for GHCB.GuestRequest and driver use
+	if err = initSharedDMA(ghcb[0], 10 << 20); err != nil {
 		return fmt.Errorf("could not allocate shared DMA region, %v", err)
 	}
 
-	ghcb.Region = dma.Default()
+	// finish VCPUs instance creation
+
+	ghcb[0].Region = dma.Default()
+
+	for n := uint64(1); n < uint64(amd64.NumCPU()); n++ {
+		ghcb[n] = &sev.GHCB{
+			CPU: x64.AMD64,
+		}
+		ghcb[n].Region = dma.Default()
+	}
+
+	return
+}
+
+func sevCmd(_ *shell.Interface, _ []string) (res string, err error) {
+	var buf bytes.Buffer
+
+	defer func() {
+		res = buf.String()
+		err = nil
+	}()
+
+	if features == nil {
+		return "", fmt.Errorf("AMD SEV-SNP features not available")
+	}
+
+	fmt.Fprintf(&buf, "SEV ................: %v\n", features.SEV.SEV)
+	fmt.Fprintf(&buf, "SEV-ES .............: %v\n", features.SEV.ES)
+	fmt.Fprintf(&buf, "SEV-SNP ............: %v\n", features.SEV.SNP)
+	fmt.Fprintf(&buf, "Encrypted bit ......: %d\n", features.EncryptedBit)
+
+	if !features.SEV.SNP {
+		return
+	}
+
+	if x64.Console.Out == 0 {
+		return "", fmt.Errorf("EFI boot services not available")
+	}
+
+	if snp, err = x64.UEFI.GetSNPConfiguration(); err != nil {
+		fmt.Fprintf(&buf, " could not find AMD SEV-SNP pages, %v", err)
+		return
+	}
+
+	fmt.Fprintf(&buf, "SNP Version ........: %d\n\n", snp.Version)
+	fmt.Fprintf(&buf, "Secrets Page .......: %#x (%d bytes)\n", snp.SecretsPagePhysicalAddress, snp.SecretsPageSize)
+
+	if secrets == nil {
+		return "", fmt.Errorf("AMD SEV-SNP secrets not available")
+	}
+
+	fmt.Fprintf(&buf, "Secrets Version ....: %d\n", secrets.Version)
+	fmt.Fprintf(&buf, "TSC Factor .........: %#x\n", secrets.TSCFactor)
+	fmt.Fprintf(&buf, "Launch Mitigations .: %#x\n", secrets.LaunchMitVector)
+	fmt.Fprintf(&buf, "VMPCK0 .............: %#02x -- %#02x\n", secrets.VMPCK0[0], secrets.VMPCK0[31])
+	fmt.Fprintf(&buf, "VMPCK1 .............: %#02x -- %#02x\n", secrets.VMPCK1[0], secrets.VMPCK1[31])
+	fmt.Fprintf(&buf, "VMPCK2 .............: %#02x -- %#02x\n", secrets.VMPCK2[0], secrets.VMPCK2[31])
+	fmt.Fprintf(&buf, "VMPCK3 .............: %#02x -- %#02x\n", secrets.VMPCK3[0], secrets.VMPCK3[31])
+	fmt.Fprintf(&buf, "VMPCK3 .............: %#02x -- %#02x\n", secrets.VMPCK3[0], secrets.VMPCK3[31])
+
+	fmt.Fprintf(&buf, "\n")
+	fmt.Fprintf(&buf, "vCPU ...............: %d\n", goos.ProcID())
+	fmt.Fprintf(&buf, "GHCB GPA ...........: %#x\n", x64.AMD64.MSR(sev.MSR_AMD_GHCB))
+
+	hvFeatures, err := ghcb[goos.ProcID()].HypervisorFeatures()
+
+	if err != nil {
+		fmt.Fprintf(&buf, " could not request hypervisor featuress, %v", err)
+		return
+	}
+
+	fmt.Fprintf(&buf, "Hypervisor Features : %#x\n", hvFeatures)
 
 	return
 }
@@ -184,14 +207,14 @@ func attestationCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	var buf bytes.Buffer
 	var report *sev.AttestationReport
 
-	if err = initGHCB(); err != nil {
-		return "", fmt.Errorf("could not initialize GHCB, %v", err)
+	if ghcb == nil {
+		return "", fmt.Errorf("GHCB not present")
 	}
 
 	data := make([]byte, 64)
 	rand.Read(data)
 
-	if report, err = ghcb.GetAttestationReport(data, secrets.VMPCK0[:], 0); err != nil {
+	if report, err = ghcb[goos.ProcID()].GetAttestationReport(data, secrets.VMPCK0[:], 0); err != nil {
 		return "", fmt.Errorf("could not get report, %v", err)
 	}
 
@@ -229,8 +252,8 @@ func attestationCmd(_ *shell.Interface, arg []string) (res string, err error) {
 func kdfCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	var key []byte
 
-	if err = initGHCB(); err != nil {
-		return "", fmt.Errorf("could not initialize GHCB, %v", err)
+	if ghcb == nil {
+		return "", fmt.Errorf("GHCB not present")
 	}
 
 	// Perform key derivation from the physical CPU keys, bound to the
@@ -240,7 +263,7 @@ func kdfCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		GuestFieldSelect: sev.GuestSVN | sev.Measurement | sev.GuestPolicy,
 	}
 
-	if key, err = ghcb.DeriveKey(req, secrets.VMPCK0[:], 0); err != nil {
+	if key, err = ghcb[goos.ProcID()].DeriveKey(req, secrets.VMPCK0[:], 0); err != nil {
 		return "", fmt.Errorf("could not derive key, %v", err)
 	}
 
@@ -251,11 +274,11 @@ func tscCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	var buf bytes.Buffer
 	var tsc *sev.TSCInfo
 
-	if err = initGHCB(); err != nil {
-		return "", fmt.Errorf("could not initialize GHCB, %v", err)
+	if ghcb == nil {
+		return "", fmt.Errorf("GHCB not present")
 	}
 
-	if tsc, err = ghcb.TSCInfo(secrets.VMPCK0[:], 0); err != nil {
+	if tsc, err = ghcb[goos.ProcID()].TSCInfo(secrets.VMPCK0[:], 0); err != nil {
 		return "", fmt.Errorf("could not request TSC, %v", err)
 	}
 

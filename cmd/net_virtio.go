@@ -15,7 +15,6 @@ import (
 	"runtime/goos"
 	"strings"
 
-	"github.com/usbarmory/tamago/kvm/sev"
 	"github.com/usbarmory/tamago/kvm/virtio"
 	"github.com/usbarmory/tamago/soc/intel/ioapic"
 	"github.com/usbarmory/tamago/soc/intel/pci"
@@ -30,6 +29,8 @@ import (
 )
 
 const (
+	IOAPIC0_BASE = 0xfec00000
+
 	VIRTIO_NET_PCI_VENDOR = 0x1af4 // Red Hat, Inc.
 
 	// Virtio 1.0 network device
@@ -86,12 +87,6 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		return "", fmt.Errorf("could not find VirtIO network device")
 	}
 
-	if !sev.Features(x64.AMD64).SEV.SEV {
-		x64.AllocateDMA(10 << 20)
-	} else if err = initGHCB(); err != nil {
-		return "", fmt.Errorf("could not initialize GHCB, %v", err)
-	}
-
 	if err := nic.Init(); err != nil {
 		return "", fmt.Errorf("could not initialize VirtIO device, %v", err)
 	}
@@ -114,14 +109,8 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	net.SocketFunc = iface.Stack.Socket
 
 	go func() {
-		if x64.Console.Out == 0 {
-			// UEFI previosly terminated, use IRQs
-			nic.Transport.EnableInterrupt(nic.IRQ, vnet.ReceiveQueue)
-			startInterruptHandler(nic, iface)
-		}  else {
-			// UEFI active, poll
-			iface.Start()
-		}
+		nic.Transport.EnableInterrupt(nic.IRQ, vnet.ReceiveQueue)
+		startInterruptHandler(nic, iface)
 	}()
 
 	nic.Start()
@@ -156,7 +145,7 @@ func startInterruptHandler(dev *vnet.Net, iface *gnet.Interface) {
 	}
 
 	ioapic := &ioapic.IOAPIC{
-		Base: 0xfec00000,
+		Base: IOAPIC0_BASE,
 	}
 
 	ioapic.EnableInterrupt(dev.IRQ, dev.IRQ)

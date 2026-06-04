@@ -36,12 +36,6 @@ func init() {
 }
 
 func gvnicCmd(console *shell.Interface, arg []string) (res string, err error) {
-	if !sev.Features(x64.AMD64).SEV.SEV {
-		x64.AllocateDMA(10 << 20)
-	} else if err = initGHCB(); err != nil {
-		return "", fmt.Errorf("could not initialize GHCB, %v", err)
-	}
-
 	gve := &gvnic.GVE{
 		Device: pci.Probe(
 			0,

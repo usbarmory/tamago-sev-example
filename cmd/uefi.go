@@ -78,11 +78,11 @@ func init() {
 		Fn:      shutdownCmd,
 	})
 
-	shell.Add(shell.Cmd{
-		Name: "terminate",
-		Help: "exit EFI Boot Services",
-		Fn:   terminateCmd,
-	})
+	//shell.Add(shell.Cmd{
+	//	Name: "terminate",
+	//	Help: "exit EFI Boot Services",
+	//	Fn:   terminateCmd,
+	//})
 
 	shell.Add(shell.Cmd{
 		Name:    "efivar",
@@ -273,9 +273,6 @@ func terminateCmd(_ *shell.Interface, _ []string) (_ string, err error) {
 
 	// trap CPU exceptions
 	x64.AMD64.EnableExceptions()
-
-	// initialize APs
-	x64.AMD64.InitSMP(-1)
 
 	return
 }

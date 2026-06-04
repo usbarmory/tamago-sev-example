@@ -49,7 +49,6 @@ sev-tsc                                   # AMD SEV-SNP TSC information
 stack                                     # goroutine stack trace (current)
 stackall                                  # goroutine stack trace (all)
 stat            <path>                    # show file information
-terminate                                 # exit EFI Boot Services
 uefi                                      # UEFI information
 uptime                                    # show system running time
 
@@ -68,6 +67,10 @@ VMPCK0 .............: 0x08 -- 0x4c
 VMPCK1 .............: 0xd7 -- 0x99
 VMPCK2 .............: 0x45 -- 0x86
 VMPCK3 .............: 0xd5 -- 0xa0
+
+vCPU ...............: 2
+GHCB GPA ...........: 0x7ff36000
+Hypervisor Features : 0x3
 
 > sev-report
 Version ............: 5

@@ -18,7 +18,7 @@ OVMF ?= OVMF.amdsev.fd
 OVMFCODE ?= OVMF_CODE.fd
 LOG ?= qemu.log
 
-SMP ?= 1
+SMP ?= $(shell nproc)
 QEMU ?= qemu-system-x86_64 -machine q35,pit=off,pic=off \
         -m 4G -smp $(SMP) \
         -enable-kvm -cpu host,invtsc=on,kvmclock=on -no-reboot \
@@ -27,7 +27,7 @@ QEMU ?= qemu-system-x86_64 -machine q35,pit=off,pic=off \
         -drive format=raw,file=fat:rw:$(CURDIR)/qemu-disk \
         -drive if=pflash,format=raw,readonly,file=$(OVMFCODE) \
         -global isa-debugcon.iobase=0x402 \
-        -serial stdio -nographic -monitor none  \
+        -serial stdio -nographic -monitor none \
         # -debugcon file:$(LOG)
 
 # UEFI Simple Network Protocol not available
