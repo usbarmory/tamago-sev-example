@@ -72,7 +72,6 @@ qemu: $(APP).efi
 	$(QEMU)
 
 qemu-snp: $(APP).efi
-	mkdir -p $(CURDIR)/qemu-disk/efi/boot && cp $(CURDIR)/$(APP).efi $(CURDIR)/qemu-disk/efi/boot/bootx64.efi
 	$(QEMU_SNP)
 
 qemu-snp-disk: $(APP).efi
