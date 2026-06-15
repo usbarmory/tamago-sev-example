@@ -108,12 +108,7 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	// hook interface into Go runtime
 	net.SocketFunc = iface.Stack.Socket
 
-	go func() {
-		nic.Transport.EnableInterrupt(nic.IRQ, vnet.ReceiveQueue)
-		startInterruptHandler(nic, iface)
-	}()
-
-	nic.Start()
+	go startInterruptHandler(nic, iface)
 
 	if len(arg[3]) > 0 {
 		ip, _, _ := strings.Cut(arg[0], `/`)
@@ -180,6 +175,9 @@ func startInterruptHandler(dev *vnet.Net, iface *gnet.Interface) {
 		cpu.WaitInterrupt()
 		cpu.SetAlarm(0)
 	}
+
+	dev.Transport.EnableInterrupt(dev.IRQ, vnet.ReceiveQueue)
+	go dev.Start()
 
 	cpu.ServiceInterrupts(isr)
 }
