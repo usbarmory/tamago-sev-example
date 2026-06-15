@@ -49,7 +49,6 @@ func init() {
 		Help: "list PCI devices",
 		Fn:   lspciCmd,
 	})
-
 }
 
 func date(epoch int64) {
