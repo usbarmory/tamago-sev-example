@@ -6,6 +6,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"net"
 	"net/http"
@@ -86,7 +87,7 @@ func netCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	}
 
 	iface.Stack.EnableICMP()
-	go iface.Start()
+	go iface.Start(context.Background())
 
 	// hook interface into Go runtime
 	net.SocketFunc = iface.Stack.Socket
