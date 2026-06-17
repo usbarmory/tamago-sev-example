@@ -14,7 +14,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/gliderlabs/ssh"
 	"github.com/usbarmory/go-net"
 
 	"github.com/usbarmory/go-boot/shell"
@@ -23,6 +22,8 @@ import (
 
 	// maintained set of TLS roots for any potential TLS client requests
 	_ "golang.org/x/crypto/x509roots/fallback"
+
+	"github.com/usbarmory/tamago-sev-example/internal/ssh"
 )
 
 const receiveMask = uefi.EFI_SIMPLE_NETWORK_RECEIVE_UNICAST |
@@ -99,9 +100,7 @@ func netCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		fmt.Printf("\thttp://%s:80/debug/pprof\n", ip)
 		fmt.Printf("\tssh://%s:22\n", ip)
 
-		ssh.Handle(sessionHandler)
-
-		go ssh.ListenAndServe(":22", nil)
+		go ssh.Start(Banner)
 		go http.ListenAndServe(":80", nil)
 	}
 

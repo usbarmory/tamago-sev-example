@@ -15,6 +15,8 @@ require (
 )
 
 require (
+	filippo.io/bigmod v0.1.1-0.20260103110540-f8a47775ebe5 // indirect
+	filippo.io/keygen v0.0.0-20260114151900-8e2790ea4c5b // indirect
 	github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/google/btree v1.1.2 // indirect

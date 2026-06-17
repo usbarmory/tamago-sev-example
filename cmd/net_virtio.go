@@ -25,7 +25,7 @@ import (
 	"github.com/usbarmory/go-net"
 	"github.com/usbarmory/go-net/virtio"
 
-	"github.com/gliderlabs/ssh"
+	"github.com/usbarmory/tamago-sev-example/internal/ssh"
 )
 
 const (
@@ -117,9 +117,7 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		log.Printf("\thttp://%s:80/debug/pprof\n", ip)
 		log.Printf("\tssh://%s:22\n", ip)
 
-		ssh.Handle(sessionHandler)
-
-		go ssh.ListenAndServe(":22", nil)
+		go ssh.Start(Banner)
 		go http.ListenAndServe(":80", nil)
 	}
 

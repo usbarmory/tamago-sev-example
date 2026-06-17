@@ -9,7 +9,6 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"log"
 	"regexp"
 	"runtime/goos"
 	"strconv"
@@ -18,10 +17,8 @@ import (
 	"time"
 
 	"github.com/usbarmory/tamago/amd64"
-	"github.com/usbarmory/tamago/kvm/sev"
 
 	"github.com/usbarmory/go-boot/shell"
-	"github.com/usbarmory/go-boot/uefi/x64"
 )
 
 func init() {
@@ -34,36 +31,6 @@ func init() {
 		Help: "launch SMP test",
 		Fn:   smpCmd,
 	})
-}
-
-// TODO: WiP
-func createAPs() {
-	if ghcb == nil {
-		return
-	}
-
-	ncpu := amd64.NumCPU()
-
-	for i := 1; i < ncpu; i++ {
-		if err := ghcb[0].RemoveAP(i); err != nil {
-			log.Printf("could not stop AP%d, %v", i, err)
-			return
-		}
-
-		// set VMSA defaults
-		vmsa := &sev.VMSA{}
-		vmsa.Init(0)
-
-		// match current features
-		vmsa.SEV_FEATURES = sev.Features(x64.AMD64).SEV.Features
-
-		if err := ghcb[0].CreateAP(1, vmsa); err != nil {
-			log.Printf("could not create AP%d, %v", 1, err)
-			return
-		}
-	}
-
-	x64.AMD64.InitSMP(-1)
 }
 
 func smpCmd(console *shell.Interface, arg []string) (string, error) {

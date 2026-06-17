@@ -18,6 +18,7 @@ import (
 	"github.com/usbarmory/go-boot/uefi/x64"
 
 	"github.com/usbarmory/tamago-sev-example/cmd"
+	"github.com/usbarmory/tamago-sev-example/internal/kvm"
 )
 
 const (
@@ -44,7 +45,7 @@ func main() {
 	x64.UEFI.Boot.SetWatchdogTimer(0)
 
 	if sev.Features(x64.AMD64).SEV.SNP {
-		if err := cmd.InitGHCB(); err != nil {
+		if err := kvm.InitGHCB(); err != nil {
 			log.Printf("could not initialize GHCB, %v", err)
 		}
 	} else {

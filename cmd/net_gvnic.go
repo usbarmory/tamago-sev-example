@@ -35,6 +35,7 @@ func init() {
 	})
 }
 
+// TODO: WiP
 func gvnicCmd(console *shell.Interface, arg []string) (res string, err error) {
 	gve := &gvnic.GVE{
 		Device: pci.Probe(
