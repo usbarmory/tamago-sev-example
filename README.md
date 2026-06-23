@@ -35,7 +35,7 @@ info                                      # device information
 ls              (<path>)?                 # list directory contents
 lspci                                     # list PCI devices
 msr             <hex addr>                # read model-specific register
-net-gve                                   # start gVNIC networking
+net-gve         <ip>       <gw> (debug)?  # start gVNIC networking
 net-uefi        <ip> <mac> <gw> (debug)?  # start UEFI networking
 net-virtio      <ip> <mac> <gw> (debug)?  # start VirtIO networking
 peek            <hex addr> <size>         # memory display (use with caution)

@@ -8,15 +8,22 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"net"
+	"net/http"
 	_ "net/http/pprof"
+	"regexp"
+	"strings"
 
 	"github.com/usbarmory/tamago/kvm/gvnic"
-	"github.com/usbarmory/tamago/kvm/sev"
 	"github.com/usbarmory/tamago/soc/intel/pci"
 
 	"github.com/usbarmory/go-boot/shell"
-	"github.com/usbarmory/go-boot/uefi/x64"
+
+	"github.com/usbarmory/go-net"
+
+	"github.com/usbarmory/tamago-sev-example/internal/ssh"
 )
 
 // Google Virtual Private Cloud (GCP) - europe-west3
@@ -29,9 +36,12 @@ const (
 
 func init() {
 	shell.Add(shell.Cmd{
-		Name: "net-gve",
-		Help: "start gVNIC networking",
-		Fn:   gvnicCmd,
+		Name:    "net-gve",
+		Args:    3,
+		Pattern: regexp.MustCompile(`^net-gve (\S+) (\S+)( debug)?$`),
+		Syntax:  "<ip>       <gw> (debug)?",
+		Help:    "start gVNIC networking",
+		Fn:      gvnicCmd,
 	})
 }
 
@@ -49,5 +59,30 @@ func gvnicCmd(console *shell.Interface, arg []string) (res string, err error) {
 		return "", fmt.Errorf("%+v %v", gve.Info, err)
 	}
 
-	return fmt.Sprintf("network initialized (%s)\n", gve.MAC()), nil
+	iface := gnet.Interface{
+		NetworkDevice: gve,
+	}
+
+	if err := iface.Init(arg[0], gve.MAC().String(), arg[2]); err != nil {
+		return "", fmt.Errorf("could not initialize networking, %v", err)
+	}
+
+	iface.Stack.EnableICMP()
+	go iface.Start(context.Background())
+
+	// hook interface into Go runtime
+	net.SocketFunc = iface.Stack.Socket
+
+	if len(arg[2]) > 0 {
+		ip, _, _ := strings.Cut(arg[0], `/`)
+
+		fmt.Printf("starting debug servers:\n")
+		fmt.Printf("\thttp://%s:80/debug/pprof\n", ip)
+		fmt.Printf("\tssh://%s:22\n", ip)
+
+		go ssh.Start(Banner)
+		go http.ListenAndServe(":80", nil)
+	}
+
+	return fmt.Sprintf("network initialized (%s %s)\n", arg[0], gve.MAC()), nil
 }
