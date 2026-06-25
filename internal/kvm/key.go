@@ -20,9 +20,9 @@ import (
 	"github.com/usbarmory/tamago/kvm/sev"
 )
 
-// Signer derives a signer uniquely and deterministically generated for this VM
-// for attestation purposes.
-func Signer() (deviceKey ssh.Signer, err error) {
+const retries = 8
+
+func deriveGuestKey() (key []byte, err error) {
 	if GHCB == nil {
 		return nil, fmt.Errorf("GHCB not present")
 	}
@@ -34,12 +34,28 @@ func Signer() (deviceKey ssh.Signer, err error) {
 		GuestFieldSelect: sev.GuestSVN | sev.Measurement | sev.GuestPolicy,
 	}
 
-	ghcb := GHCB[goos.ProcID()]
 	vmpck := Secrets.VMPCK0[:]
 
-	key, err := ghcb.DeriveKey(req, vmpck, 0)
+	// retry a few times as this might faile due to vCPU switch
+	for _ = range retries {
+		ghcb := GHCB[goos.ProcID()]
 
-	if err != nil {
+		if key, err = ghcb.DeriveKey(req, vmpck, 0); err != nil {
+			continue
+		}
+
+		break
+	}
+
+	return
+}
+
+// Signer derives a signer uniquely and deterministically generated for this VM
+// for attestation purposes.
+func Signer() (deviceKey ssh.Signer, err error) {
+	var key []byte
+
+	if key, err = deriveGuestKey(); err != nil {
 		return nil, fmt.Errorf("could not derive key, %v", err)
 	}
 
