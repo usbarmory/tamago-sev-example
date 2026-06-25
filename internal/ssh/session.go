@@ -16,19 +16,9 @@ import (
 	"github.com/usbarmory/tamago-sev-example/internal/kvm"
 )
 
+const addr = ":22"
+
 func Start(banner string) {
-	srv := &ssh.Server{
-		Addr: ":22",
-	}
-
-	signer, err := kvm.Signer()
-
-	if err != nil {
-		log.Printf("could not create signer, %v", err)
-	} else {
-		srv.AddHostKey(signer)
-	}
-
 	ssh.Handle(func(s ssh.Session) {
 		c := &shell.Interface{
 			Banner:     banner,
@@ -41,7 +31,20 @@ func Start(banner string) {
 		c.Start(true)
 	})
 
-	if err := srv.ListenAndServe(); err != nil {
-		log.Printf("ssh server terminated, %v", err)
+	srv := &ssh.Server{
+		Addr: addr,
 	}
+
+	signer, err := kvm.Signer()
+
+	if err != nil {
+		// use random host key
+		err = ssh.ListenAndServe(addr, nil)
+	} else {
+		// use VM unique key
+		srv.AddHostKey(signer)
+		err = srv.ListenAndServe()
+	}
+
+	log.Printf("ssh server terminated, %v", err)
 }
