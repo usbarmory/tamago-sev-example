@@ -10,7 +10,6 @@ package main
 import (
 	"log"
 
-	"github.com/usbarmory/tamago/soc/intel/ioapic"
 	"github.com/usbarmory/tamago/kvm/sev"
 
 	"github.com/usbarmory/go-boot/shell"
@@ -19,20 +18,6 @@ import (
 
 	"github.com/usbarmory/tamago-sev-example/cmd"
 	"github.com/usbarmory/tamago-sev-example/internal/kvm"
-)
-
-const (
-	// Intel I/O Programmable Interrupt Controllers
-	IOAPIC0_BASE = 0xfec00000
-)
-
-var (
-	// I/O APIC - GSI 0-23
-	IOAPIC0 = &ioapic.IOAPIC{
-		Index:   0,
-		Base:    IOAPIC0_BASE,
-		GSIBase: 0,
-	}
 )
 
 func init() {
