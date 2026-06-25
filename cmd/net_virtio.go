@@ -11,9 +11,11 @@ import (
 	"net"
 	"net/http"
 	_ "net/http/pprof"
+	"os/signal"
 	"regexp"
 	"runtime/goos"
 	"strings"
+	"time"
 
 	"github.com/usbarmory/tamago/kvm/virtio"
 	"github.com/usbarmory/tamago/soc/intel/ioapic"
@@ -108,7 +110,15 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	// hook interface into Go runtime
 	net.SocketFunc = iface.Stack.Socket
 
-	go startInterruptHandler(nic, iface)
+	nic.Transport.EnableInterrupt(nic.IRQ, vnet.ReceiveQueue)
+	startInterruptHandler(nic, iface)
+
+	// ensure ISR is running before starting the interface
+	for !signal.Waiting() {
+		time.Sleep(1 * time.Millisecond)
+	}
+
+	nic.Start()
 
 	if len(arg[3]) > 0 {
 		ip, _, _ := strings.Cut(arg[0], `/`)
@@ -174,8 +184,5 @@ func startInterruptHandler(dev *vnet.Net, iface *gnet.Interface) {
 		cpu.SetAlarm(0)
 	}
 
-	dev.Transport.EnableInterrupt(dev.IRQ, vnet.ReceiveQueue)
-	go dev.Start()
-
-	cpu.ServiceInterrupts(isr)
+	go cpu.ServiceInterrupts(isr)
 }
