@@ -17,17 +17,17 @@ import (
 )
 
 func Start(banner string) {
+	srv := &ssh.Server{
+		Addr: ":22",
+	}
+
 	signer, err := kvm.Signer()
 
 	if err != nil {
 		log.Printf("could not create signer, %v", err)
-		return
+	} else {
+		srv.AddHostKey(signer)
 	}
-
-	srv := &ssh.Server{
-		Addr: ":22",
-	}
-	srv.AddHostKey(signer)
 
 	ssh.Handle(func(s ssh.Session) {
 		c := &shell.Interface{
