@@ -8,6 +8,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
@@ -96,9 +97,9 @@ func netCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	if len(arg[3]) > 0 {
 		ip, _, _ := strings.Cut(arg[0], `/`)
 
-		fmt.Printf("starting debug servers:\n")
-		fmt.Printf("\thttp://%s:80/debug/pprof\n", ip)
-		fmt.Printf("\tssh://%s:22\n", ip)
+		log.Printf("starting debug servers:\n")
+		log.Printf("\thttp://%s:80/debug/pprof\n", ip)
+		log.Printf("\tssh://%s:22\n", ip)
 
 		go ssh.Start(Banner)
 		go http.ListenAndServe(":80", nil)

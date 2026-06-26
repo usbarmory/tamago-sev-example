@@ -3,13 +3,12 @@
 // Use of this source code is governed by the license
 // that can be found in the LICENSE file.
 
-//go:build ignore
-
 package cmd
 
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	_ "net/http/pprof"
@@ -46,7 +45,7 @@ func init() {
 }
 
 // TODO: WiP
-func gvnicCmd(console *shell.Interface, arg []string) (res string, err error) {
+func gvnicCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	gve := &gvnic.GVE{
 		Device: pci.Probe(
 			0,
@@ -63,8 +62,12 @@ func gvnicCmd(console *shell.Interface, arg []string) (res string, err error) {
 		NetworkDevice: gve,
 	}
 
-	if err := iface.Init(arg[0], gve.MAC().String(), arg[2]); err != nil {
+	if err := iface.Init(arg[0], gve.MAC().String(), arg[1]); err != nil {
 		return "", fmt.Errorf("could not initialize networking, %v", err)
+	}
+
+	iface.HandleStackErr = func(err error, tx bool) {
+		fmt.Printf("network stack error (tx:%v), %v", tx, err)
 	}
 
 	iface.Stack.EnableICMP()
@@ -76,13 +79,18 @@ func gvnicCmd(console *shell.Interface, arg []string) (res string, err error) {
 	if len(arg[2]) > 0 {
 		ip, _, _ := strings.Cut(arg[0], `/`)
 
-		fmt.Printf("starting debug servers:\n")
-		fmt.Printf("\thttp://%s:80/debug/pprof\n", ip)
-		fmt.Printf("\tssh://%s:22\n", ip)
+		log.Printf("network initialized (%s %s)\n", arg[0], gve.MAC())
+		log.Printf("starting debug servers:\n")
+		log.Printf("\thttp://%s:80/debug/pprof\n", ip)
+		log.Printf("\tssh://%s:22\n", ip)
 
 		go ssh.Start(Banner)
 		go http.ListenAndServe(":80", nil)
 	}
+
+	// required to avoid UEFI #VC handler overlap
+	log.Printf("stopping serial console\n")
+	select {}
 
 	return fmt.Sprintf("network initialized (%s %s)\n", arg[0], gve.MAC()), nil
 }

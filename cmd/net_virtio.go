@@ -118,11 +118,14 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		time.Sleep(1 * time.Millisecond)
 	}
 
-	nic.Start()
+	go nic.Start()
+
+	mac, _ := iface.Stack.HardwareAddress()
 
 	if len(arg[3]) > 0 {
 		ip, _, _ := strings.Cut(arg[0], `/`)
 
+		log.Printf("network initialized (%s %s)\n", arg[0], mac)
 		log.Printf("starting debug servers:\n")
 		log.Printf("\thttp://%s:80/debug/pprof\n", ip)
 		log.Printf("\tssh://%s:22\n", ip)
@@ -131,7 +134,9 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		go http.ListenAndServe(":80", nil)
 	}
 
-	mac, _ := iface.Stack.HardwareAddress()
+	// required to avoid UEFI #VC handler overlap
+	log.Printf("stopping serial console\n")
+	select {}
 
 	return fmt.Sprintf("network initialized (%s %s)\n", arg[0], mac), nil
 }

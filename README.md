@@ -20,7 +20,7 @@ registered from the `cmd` package:
 initializing EFI services
 exiting EFI boot services
 
-tamago-sev-example • tamago/amd64 (go1.26rc2) • UEFI x64
+tamago-sev-example • tamago/amd64 • UEFI x64
 
 build                                     # build information
 cat             <path>                    # show file contents
