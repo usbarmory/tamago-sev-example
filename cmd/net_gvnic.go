@@ -44,7 +44,6 @@ func init() {
 	})
 }
 
-// TODO: WiP
 func gvnicCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	gve := &gvnic.GVE{
 		Device: pci.Probe(
@@ -71,7 +70,6 @@ func gvnicCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	}
 
 	iface.Stack.EnableICMP()
-	go iface.Start(context.Background())
 
 	// hook interface into Go runtime
 	net.SocketFunc = iface.Stack.Socket
@@ -88,9 +86,10 @@ func gvnicCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		go http.ListenAndServe(":80", nil)
 	}
 
-	// required to avoid UEFI #VC handler overlap
+	// gVNIC driver does not yet use interrupts and for now we block here,
+	// this is also required to avoid UEFI #VC handler overlap.
 	log.Printf("stopping serial console\n")
-	select {}
+	iface.Start(context.Background())
 
-	return fmt.Sprintf("network initialized (%s %s)\n", arg[0], gve.MAC()), nil
+	return "", nil
 }
