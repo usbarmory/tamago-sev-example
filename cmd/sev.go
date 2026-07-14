@@ -57,6 +57,23 @@ func init() {
 	})
 }
 
+func reportVerify(report *sev.AttestationReport) {
+	if net.SocketFunc == nil {
+		log.Printf("Verification error, network unavailable")
+		return
+	}
+
+	log.Printf("** requesting on-line report verification **")
+
+	go func() {
+		if err := verify.RawSnpReport(report.Bytes(), verify.DefaultOptions()); err != nil {
+			log.Printf("Verification error, %v", err)
+		} else {
+			log.Printf("Verification succeeded")
+		}
+	}()
+}
+
 func sevCmd(_ *shell.Interface, _ []string) (res string, err error) {
 	var buf bytes.Buffer
 
@@ -157,15 +174,7 @@ func attestationCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	fmt.Fprintf(&buf, "SignatureS .........: %x\n", report.Signature[72:72+48])
 
 	if arg[0] == "verify" {
-		if net.SocketFunc == nil {
-			fmt.Fprintf(&buf, "Verification errors : network unavailable\n")
-		} else {
-			log.Printf("** requesting on-line report verification in background **")
-			go func() {
-				err := verify.RawSnpReport(report.Bytes(), verify.DefaultOptions())
-				log.Printf("Verification result : %v\n", err)
-			}()
-		}
+		reportVerify(report)
 	}
 
 	return buf.String(), nil
