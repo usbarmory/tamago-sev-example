@@ -29,6 +29,13 @@ func main() {
 	// disable UEFI watchdog
 	x64.UEFI.Boot.SetWatchdogTimer(0)
 
+	// This unikernel does not set its own (*GHCB).Layout and therefore
+	// relies on the previous GHCB GPA as initialized by UEFI.
+	//
+	// Additionally, for now, the existing UEFI #VC handler is kept. To
+	// ensure safe operation networking must be activated without any
+	// listeners/writers on an active serial console, to avoid overlapping
+	// GHCB use and #VC handling.
 	if sev.Features(x64.AMD64).SEV.SNP {
 		if err := kvm.InitGHCB(); err != nil {
 			log.Printf("could not initialize GHCB, %v", err)
@@ -40,7 +47,7 @@ func main() {
 	x64.InitSMP()
 
 	console := &shell.Interface{
-		Banner:  cmd.Banner,
+		Banner:     cmd.Banner,
 		ReadWriter: x64.UART0,
 	}
 
