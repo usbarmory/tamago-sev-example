@@ -134,7 +134,7 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		go http.ListenAndServe(":80", nil)
 	}
 
-	// required to avoid UEFI #VC handler overlap
+	// TODO: implement IRQ for UART driver
 	log.Printf("stopping serial console\n")
 	select {}
 

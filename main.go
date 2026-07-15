@@ -30,12 +30,12 @@ func main() {
 	x64.UEFI.Boot.SetWatchdogTimer(0)
 
 	// This unikernel does not set its own (*GHCB).Layout and therefore
-	// relies on the previous GHCB GPA as initialized by UEFI.
+	// relies on the previous GHCB GPA as initialized by OVMF as well as
+	// its #VC handler.
 	//
-	// Additionally, for now, the existing UEFI #VC handler is kept. To
-	// ensure safe operation networking must be activated without any
-	// listeners/writers on an active serial console, to avoid overlapping
-	// GHCB use and #VC handling.
+	// For this reason any GHCB call through github.com/usbarmory/kvm/sev
+	// might overlap with OVMF #VC handling and result in an error
+	// (particularly under SMP).
 	if sev.Features(x64.AMD64).SEV.SNP {
 		if err := kvm.InitGHCB(); err != nil {
 			log.Printf("could not initialize GHCB, %v", err)
