@@ -39,8 +39,9 @@ const (
 	VIRTIO_NET_PCI_LEGACY_DEVICE = 0x1000
 	VIRTIO_NET_PCI_MODERN_DEVICE = 0x1041
 
-	// redirection vector for IOAPIC IRQ to CPU IRQ or MSI-X signal
+	// redirection vectors for IOAPIC IRQ to CPU IRQ or MSI-X signal
 	VIRTIO_NET_IRQ = 32
+	COM1_IRQ       = 33
 )
 
 func init() {
@@ -134,10 +135,6 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		go http.ListenAndServe(":80", nil)
 	}
 
-	// TODO: implement IRQ for UART driver
-	log.Printf("stopping serial console\n")
-	select {}
-
 	return fmt.Sprintf("network initialized (%s %s)\n", arg[0], mac), nil
 }
 
@@ -157,6 +154,10 @@ func startInterruptHandler(dev *vnet.Net, iface *gnet.Interface) {
 	}
 
 	ioapic.EnableInterrupt(dev.IRQ, dev.IRQ)
+	ioapic.EnableInterrupt(x64.UART0.IRQ, COM1_IRQ)
+
+	ch := make(chan bool)
+	x64.UART0.EnableInterrupt(ch)
 
 	// as IRQs are enabled, favor slicing dev.ReceiveWithHeader, opposed to
 	// dev.Receive for better performance
@@ -173,6 +174,8 @@ func startInterruptHandler(dev *vnet.Net, iface *gnet.Interface) {
 
 				iface.Stack.RecvInboundPacket(buf[dev.HeaderLength:])
 			}
+		case COM1_IRQ:
+			ch <- true
 		default:
 			log.Printf("internal error, unexpected IRQ %d", irq)
 		}

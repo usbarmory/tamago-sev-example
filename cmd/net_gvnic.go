@@ -86,8 +86,7 @@ func gvnicCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		go http.ListenAndServe(":80", nil)
 	}
 
-	// The gVNIC driver does not yet use interrupts and for now we block
-	// here (TODO: implement IRQ for UART driver).
+	// The gVNIC driver does not yet use interrupts, for now we block here
 	log.Printf("stopping serial console\n")
 	iface.Start(context.Background())
 
