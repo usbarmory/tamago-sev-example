@@ -312,9 +312,9 @@ func efivarCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		fmt.Fprintf(&buf, "    EFI_VARIABLE_ENHANCED_AUTHENTICATED_ACCESS:         %v\n", attr.EnhancedAuthAccess)
 	}
 
-	// fix-up error value as GetNextVariableName will return ErrEfiNotFound
+	// fix-up error value as GetNextVariableName will return ErrEFINotFound
 	// if there are no more variables
-	if errors.Is(err, uefi.ErrEfiNotFound) {
+	if errors.Is(err, uefi.ErrEFINotFound) {
 		err = nil
 	}
 

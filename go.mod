@@ -1,6 +1,6 @@
 module github.com/usbarmory/tamago-sev-example
 
-go 1.26.5
+go 1.27.1
 
 tool github.com/usbarmory/tamago/cmd/tamago
 
@@ -9,9 +9,9 @@ require (
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/go-sev-guest v0.14.1
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
-	github.com/usbarmory/go-boot v1.8.2-0.20260720102207-6433283994fa
+	github.com/usbarmory/go-boot v1.8.2-0.20260902150910-e678e0b30680
 	github.com/usbarmory/go-net v0.0.0-20260714134120-c2c964e7084c
-	github.com/usbarmory/tamago v1.26.6-0.20260720101947-d9059b05af59
+	github.com/usbarmory/tamago v1.27.1
 	golang.org/x/crypto v0.54.0
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20260604135805-d37c95e27de6
 )
