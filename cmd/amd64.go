@@ -14,6 +14,7 @@ import (
 
 	"github.com/usbarmory/tamago/amd64"
 	"github.com/usbarmory/tamago/soc/intel/pci"
+	"github.com/usbarmory/tamago/amd64/lapic"
 
 	"github.com/usbarmory/go-boot/shell"
 	"github.com/usbarmory/go-boot/uefi/x64"
@@ -48,6 +49,15 @@ func init() {
 		Name: "lspci",
 		Help: "list PCI devices",
 		Fn:   lspciCmd,
+	})
+
+	shell.Add(shell.Cmd{
+		Name:    "irq",
+		Args:    2,
+		Pattern: regexp.MustCompile(`^irq (\d+) (\d+)$`),
+		Syntax:  "<vector> <apic>",
+		Help:    "interrupt request",
+		Fn:      irqCmd,
 	})
 }
 
@@ -131,3 +141,26 @@ func lspciCmd(_ *shell.Interface, arg []string) (string, error) {
 
 	return res.String(), nil
 }
+
+func irqCmd(_ *shell.Interface, arg []string) (string, error) {
+	vector, err := strconv.Atoi(arg[0])
+
+	if err != nil {
+		return "", fmt.Errorf("invalid vector, %v", err)
+	}
+
+	id, err := strconv.Atoi(arg[1])
+
+	if err != nil {
+		return "", fmt.Errorf("invalid APIC ID, %v", err)
+	}
+
+	apic := lapic.LAPIC{
+		Base: amd64.LAPIC_BASE,
+	}
+
+	apic.IPI(id, vector, lapic.ICR_DLV_IRQ)
+
+	return "", nil
+}
+

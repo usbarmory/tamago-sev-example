@@ -7,32 +7,23 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"net"
-	"net/http"
-	_ "net/http/pprof"
 	"os/signal"
 	"regexp"
-	"runtime/goos"
-	"strings"
 	"time"
 
 	"github.com/usbarmory/tamago/kvm/virtio"
-	"github.com/usbarmory/tamago/soc/intel/ioapic"
 	"github.com/usbarmory/tamago/soc/intel/pci"
 
 	"github.com/usbarmory/go-boot/shell"
-	"github.com/usbarmory/go-boot/uefi/x64"
 
 	"github.com/usbarmory/go-net"
 	"github.com/usbarmory/go-net/virtio"
 
-	"github.com/usbarmory/tamago-sev-example/internal/ssh"
+	"github.com/usbarmory/tamago-sev-example/internal/irq"
 )
 
 const (
-	IOAPIC0_BASE = 0xfec00000
-
 	VIRTIO_NET_PCI_VENDOR = 0x1af4 // Red Hat, Inc.
 
 	// Virtio 1.0 network device
@@ -41,7 +32,6 @@ const (
 
 	// redirection vectors for IOAPIC IRQ to CPU IRQ or MSI-X signal
 	VIRTIO_NET_IRQ = 32
-	COM1_IRQ       = 33
 )
 
 func init() {
@@ -106,13 +96,35 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		return "", fmt.Errorf("could not initialize networking, %v", err)
 	}
 
+	iface.HandleStackErr = func(err error, tx bool) {
+		fmt.Printf("network stack error (tx:%v), %v", tx, err)
+	}
+
 	iface.Stack.EnableICMP()
 
 	// hook interface into Go runtime
 	net.SocketFunc = iface.Stack.Socket
 
-	nic.Transport.EnableInterrupt(nic.IRQ, vnet.ReceiveQueue)
-	startInterruptHandler(nic, iface)
+	isr := func() {
+		size := nic.HeaderLength + gnet.EthernetMaximumSize + gnet.MTU
+		buf := make([]byte, size)
+
+		// For better performance we slice dev.ReceiveWithHeader
+		// instead of using dev.Receive.
+		for {
+			if n, err := nic.ReceiveWithHeader(buf); err != nil || n == 0 {
+				return
+			}
+
+			iface.Stack.RecvInboundPacket(buf[nic.HeaderLength:])
+		}
+	}
+
+	if err = nic.Transport.EnableInterrupt(nic.IRQ, vnet.ReceiveQueue); err != nil {
+		return
+	}
+
+	irq.StartHandler(nic.IRQ, isr)
 
 	// ensure ISR is running before starting the interface
 	for !signal.Waiting() {
@@ -124,73 +136,8 @@ func virtioNetCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	mac, _ := iface.Stack.HardwareAddress()
 
 	if len(arg[3]) > 0 {
-		ip, _, _ := strings.Cut(arg[0], `/`)
-
-		log.Printf("network initialized (%s %s)\n", arg[0], mac)
-		log.Printf("starting debug servers:\n")
-		log.Printf("\thttp://%s:80/debug/pprof\n", ip)
-		log.Printf("\tssh://%s:22\n", ip)
-
-		go ssh.Start(Banner)
-		go http.ListenAndServe(":80", nil)
+		startDebugServices(arg[0], mac)
 	}
 
 	return fmt.Sprintf("network initialized (%s %s)\n", arg[0], mac), nil
-}
-
-func startInterruptHandler(dev *vnet.Net, iface *gnet.Interface) {
-	if dev == nil || iface == nil {
-		return
-	}
-
-	cpu := x64.AMD64
-
-	if cpu.LAPIC != nil {
-		cpu.LAPIC.Enable()
-	}
-
-	ioapic := &ioapic.IOAPIC{
-		Base: IOAPIC0_BASE,
-	}
-
-	ioapic.EnableInterrupt(dev.IRQ, dev.IRQ)
-	ioapic.EnableInterrupt(x64.UART0.IRQ, COM1_IRQ)
-
-	ch := make(chan bool)
-	x64.UART0.EnableInterrupt(ch)
-
-	// as IRQs are enabled, favor slicing dev.ReceiveWithHeader, opposed to
-	// dev.Receive for better performance
-	size := dev.HeaderLength + gnet.EthernetMaximumSize + gnet.MTU
-	buf := make([]byte, size)
-
-	isr := func(irq int) {
-		switch irq {
-		case dev.IRQ:
-			for {
-				if n, err := dev.ReceiveWithHeader(buf); err != nil || n == 0 {
-					return
-				}
-
-				iface.Stack.RecvInboundPacket(buf[dev.HeaderLength:])
-			}
-		case COM1_IRQ:
-			ch <- true
-		default:
-			log.Printf("internal error, unexpected IRQ %d", irq)
-		}
-	}
-
-	// optimize CPU idle management as IRQs are enabled
-	goos.Idle = func(pollUntil int64) {
-		if pollUntil == 0 {
-			return
-		}
-
-		cpu.SetAlarm(pollUntil)
-		cpu.WaitInterrupt()
-		cpu.SetAlarm(0)
-	}
-
-	go cpu.ServiceInterrupts(isr)
 }

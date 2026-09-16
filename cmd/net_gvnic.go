@@ -6,14 +6,11 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
-	"log"
 	"net"
-	"net/http"
-	_ "net/http/pprof"
+	"os/signal"
 	"regexp"
-	"strings"
+	"time"
 
 	"github.com/usbarmory/tamago/kvm/gvnic"
 	"github.com/usbarmory/tamago/soc/intel/pci"
@@ -22,7 +19,7 @@ import (
 
 	"github.com/usbarmory/go-net"
 
-	"github.com/usbarmory/tamago-sev-example/internal/ssh"
+	"github.com/usbarmory/tamago-sev-example/internal/irq"
 )
 
 // Google Virtual Private Cloud (GCP) - europe-west3
@@ -31,6 +28,9 @@ const (
 	Netmask = "255.255.255.0"
 	IP      = "10.156.0.2"
 	Gateway = "10.156.0.1"
+
+	// redirection vectors for MSI-X signal
+	GVE_IRQ = 32
 )
 
 func init() {
@@ -57,7 +57,7 @@ func gvnicCmd(_ *shell.Interface, arg []string) (res string, err error) {
 		return "", fmt.Errorf("%+v %v", gve.Info, err)
 	}
 
-	iface := gnet.Interface{
+	iface := &gnet.Interface{
 		NetworkDevice: gve,
 	}
 
@@ -74,21 +74,38 @@ func gvnicCmd(_ *shell.Interface, arg []string) (res string, err error) {
 	// hook interface into Go runtime
 	net.SocketFunc = iface.Stack.Socket
 
-	if len(arg[2]) > 0 {
-		ip, _, _ := strings.Cut(arg[0], `/`)
+	isr := func() {
+		size := gnet.EthernetMaximumSize + gnet.MTU
+		buf := make([]byte, size)
 
-		log.Printf("network initialized (%s %s)\n", arg[0], gve.MAC())
-		log.Printf("starting debug servers:\n")
-		log.Printf("\thttp://%s:80/debug/pprof\n", ip)
-		log.Printf("\tssh://%s:22\n", ip)
+		defer gve.ClearInterrupt(gvnic.RX)
 
-		go ssh.Start(Banner)
-		go http.ListenAndServe(":80", nil)
+		for {
+			if n, err := gve.Receive(buf); err != nil || n == 0 {
+				return
+			}
+
+			iface.Stack.RecvInboundPacket(buf)
+		}
 	}
 
-	// The gVNIC driver does not yet use interrupts, for now we block here
-	log.Printf("stopping serial console\n")
-	iface.Start(context.Background())
+	if err = gve.EnableInterrupt(GVE_IRQ, gvnic.RX); err != nil {
+		return
+	}
 
-	return "", nil
+	irq.StartHandler(GVE_IRQ, isr)
+
+	// ensure ISR is running before starting the interface
+	for !signal.Waiting() {
+		time.Sleep(1 * time.Millisecond)
+	}
+
+	if len(arg[2]) > 0 {
+		startDebugServices(arg[0], gve.MAC())
+	}
+
+	// start RX events
+	gve.ClearInterrupt(gvnic.RX)
+
+	return fmt.Sprintf("network initialized (%s %s)\n", arg[0], gve.MAC()), nil
 }
