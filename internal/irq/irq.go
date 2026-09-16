@@ -30,6 +30,7 @@ func StartHandler(id int, fn func()) {
 		Base: IOAPIC0_BASE,
 	}
 
+	ioapic.EnableInterrupt(id, id)
 	ioapic.EnableInterrupt(x64.UART0.IRQ, COM1_IRQ)
 
 	ch := make(chan bool)
