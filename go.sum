@@ -1,7 +1,7 @@
 filippo.io/bigmod v0.1.1-0.20260103110540-f8a47775ebe5 h1:JA0fFr+kxpqTdxR9LOBiTWpGNchqmkcsgmdeJZRclZ0=
 filippo.io/bigmod v0.1.1-0.20260103110540-f8a47775ebe5/go.mod h1:OjOXDNlClLblvXdwgFFOQFJEocLhhtai8vGLy0JCZlI=
-filippo.io/keygen v0.0.0-20260114151900-8e2790ea4c5b h1:REI1FbdW71yO56Are4XAxD+OS/e+BQsB3gE4mZRQEXY=
-filippo.io/keygen v0.0.0-20260114151900-8e2790ea4c5b/go.mod h1:9nnw1SlYHYuPSo/3wjQzNjSbeHlq2NsKo5iEtfJPWP0=
+filippo.io/keygen v1.0.0 h1:u0/Fhxlgz3uPv+XxhfgTq3BJt5VesIPM5ue/OuG7qjQ=
+filippo.io/keygen v1.0.0/go.mod h1:9nnw1SlYHYuPSo/3wjQzNjSbeHlq2NsKo5iEtfJPWP0=
 github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be h1:9AeTilPcZAjCFIImctFaOjnTIavg87rW78vTPkQqLI8=
 github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be/go.mod h1:ySMOLuWl6zY27l47sB3qLNK6tF2fkHG55UZxx8oIVo4=
 github.com/canonical/go-sp800.90a-drbg v0.0.0-20210314144037-6eeb1040d6c3 h1:oe6fCvaEpkhyW3qAicT0TnGtyht/UrgvOwMcEgLb7Aw=
@@ -48,8 +48,8 @@ github.com/usbarmory/go-boot v1.9.2-0.20260914074832-66d46a750a07 h1:d3xicW3PsAG
 github.com/usbarmory/go-boot v1.9.2-0.20260914074832-66d46a750a07/go.mod h1:4Jyp3HAmRZDm9e90KZWBZHKRAKC2QdjjM2iC2jGgMSs=
 github.com/usbarmory/go-net v0.0.0-20260714134120-c2c964e7084c h1:ubYfZqO8u2mV0stDpvCTEfGp6e0aLBda/OAGniDdQzs=
 github.com/usbarmory/go-net v0.0.0-20260714134120-c2c964e7084c/go.mod h1:nzEcbE2bexZNdjKCZaqAEr+IyPQ+WiwWGaYsAwPcwsc=
-github.com/usbarmory/tamago v1.27.2-0.20261008073616-026243ef1d58 h1:h+bytRi4z/aITZSGCxulIZT+WzYSB632IIC8X8kQWm8=
-github.com/usbarmory/tamago v1.27.2-0.20261008073616-026243ef1d58/go.mod h1:nLuV/bBHbtlpWOJftse7cr219b/Z6vitr5fyv/OHkK4=
+github.com/usbarmory/tamago v1.27.2 h1:2zxxIGGawAksrJ1GFxH9+EWj5CGA80b6eoh5LVWRWGw=
+github.com/usbarmory/tamago v1.27.2/go.mod h1:b21U5w+p2GDthzkYOIIFN5xOxgwR3Yx22L4LBGRWjKg=
 go.uber.org/multierr v1.11.0 h1:blXXJkSxSSfBVBlC76pxqeO+LN3aDfLQo+309xJstO0=
 go.uber.org/multierr v1.11.0/go.mod h1:20+QtiLqy0Nd6FdQB9TLXag12DsQkrbs3htMFfDN80Y=
 golang.org/x/crypto v0.54.0 h1:YLIA59K4fiNzHzjnZt2tUJQjQtUWfWbeHBqKtk3eScw=

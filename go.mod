@@ -1,17 +1,17 @@
 module github.com/usbarmory/tamago-sev-example
 
-go 1.27.1
+go 1.27.2
 
 tool github.com/usbarmory/tamago/cmd/tamago
 
 require (
-	filippo.io/keygen v0.0.0-20260114151900-8e2790ea4c5b
+	filippo.io/keygen v1.0.0
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/go-sev-guest v0.14.1
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/usbarmory/go-boot v1.9.2-0.20260914074832-66d46a750a07
 	github.com/usbarmory/go-net v0.0.0-20260714134120-c2c964e7084c
-	github.com/usbarmory/tamago v1.27.2-0.20261008073616-026243ef1d58
+	github.com/usbarmory/tamago v1.27.2
 	golang.org/x/crypto v0.54.0
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20260604135805-d37c95e27de6
 )
