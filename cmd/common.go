@@ -18,6 +18,7 @@ import (
 
 	"github.com/hako/durafmt"
 
+	_ "github.com/usbarmory/go-boot/cmd"
 	"github.com/usbarmory/go-boot/shell"
 )
 
@@ -79,6 +80,16 @@ func init() {
 		Help:    "resolve domain",
 		Fn:      dnsCmd,
 	})
+
+	// remove unused commands pulled in from go-boot
+	shell.Remove("clear")
+	shell.Remove("linux,l")
+	shell.Remove("log")
+	shell.Remove("memmap")
+	shell.Remove("mode")
+	shell.Remove("protocol")
+	shell.Remove("terminate")
+	shell.Remove("windows,win,w")
 
 	net.SetDefaultNS([]string{Resolver})
 }

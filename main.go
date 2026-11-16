@@ -54,7 +54,6 @@ func main() {
 	// start interactive shell
 	console.Start(true)
 
-	if x64.Console.Out != 0 {
-		x64.UEFI.Runtime.ResetSystem(uefi.EfiResetShutdown)
-	}
+	log.Printf("exit")
+	x64.UEFI.Runtime.ResetSystem(uefi.EfiResetShutdown)
 }
