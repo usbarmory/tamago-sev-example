@@ -10,9 +10,9 @@ require (
 	github.com/google/go-sev-guest v0.14.1
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/usbarmory/go-boot v1.9.2-0.20261116132820-3fe9c51c0a9d
-	github.com/usbarmory/go-net v0.0.0-20260924083839-356cbf14db9e
+	github.com/usbarmory/go-net v0.0.0-20261123075119-26f36caf8130
 	github.com/usbarmory/tamago v1.27.4
-	golang.org/x/crypto v0.54.0
+	golang.org/x/crypto v0.57.0
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20261020153306-9f2b28d4331a
 )
 
@@ -34,10 +34,10 @@ require (
 	github.com/ulikunitz/xz v0.5.15 // indirect
 	github.com/usbarmory/armory-boot v0.0.0-20260410072034-d4cd302c7f4c // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	golang.org/x/exp v0.0.0-20250305212735-054e65f0b394 // indirect
-	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/term v0.45.0 // indirect
-	golang.org/x/time v0.7.0 // indirect
-	google.golang.org/protobuf v1.33.0 // indirect
-	gvisor.dev/gvisor v0.0.0-20250911055229-61a46406f068 // indirect
+	golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc // indirect
+	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/term v0.46.0 // indirect
+	golang.org/x/time v0.15.0 // indirect
+	google.golang.org/protobuf v1.36.11 // indirect
+	gvisor.dev/gvisor v0.0.0-20261123062844-83df8eae069e // indirect
 )
