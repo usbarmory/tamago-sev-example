@@ -43,6 +43,7 @@ poke            <hex addr> <hex value>    # memory write   (use with caution)
 reset           (cold|warm)?              # reset system
 smp             <n>                       # launch SMP test
 sev                                       # AMD SEV-SNP information
+sev-cpuid       <leaf> <subleaf>          # AMD SEV-SNP CPUID function lookup
 sev-kdf                                   # AMD SEV-SNP key derivation
 sev-report      (raw|verify)?             # AMD SEV-SNP attestation report
 sev-tsc                                   # AMD SEV-SNP TSC information

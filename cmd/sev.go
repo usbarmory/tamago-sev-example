@@ -8,11 +8,13 @@ package cmd
 import (
 	"bytes"
 	"crypto/rand"
+	"errors"
 	"fmt"
 	"log"
 	"net"
 	"regexp"
 	"runtime/goos"
+	"strconv"
 
 	"github.com/google/go-sev-guest/verify"
 
@@ -33,6 +35,15 @@ func init() {
 		Name: "sev",
 		Help: "AMD SEV-SNP information",
 		Fn:   sevCmd,
+	})
+
+	shell.Add(shell.Cmd{
+		Name: "sev-cpuid",
+		Args:    2,
+		Pattern: regexp.MustCompile(`^sev-cpuid\s+([[:xdigit:]]+) ([[:xdigit:]]+)$`),
+		Syntax:  "<leaf> <subleaf>",
+		Help:    "AMD SEV-SNP CPUID function lookup",
+		Fn:      sevCPUIDCmd,
 	})
 
 	shell.Add(shell.Cmd{
@@ -108,6 +119,7 @@ func sevCmd(_ *shell.Interface, _ []string) (res string, err error) {
 
 	fmt.Fprintf(&buf, "SNP Version ........: %d\n\n", snp.Version)
 	fmt.Fprintf(&buf, "Secrets Page .......: %#x (%d bytes)\n", snp.SecretsPagePhysicalAddress, snp.SecretsPageSize)
+	fmt.Fprintf(&buf, " CPIUID Page .......: %#x (%d bytes)\n", snp.CPUIDPagePhysicalAddress, snp.CPUIDPageSize)
 
 	s := kvm.Secrets
 
@@ -137,6 +149,33 @@ func sevCmd(_ *shell.Interface, _ []string) (res string, err error) {
 	fmt.Fprintf(&buf, "Hypervisor Features : %#x\n", hvFeatures)
 
 	return
+}
+
+func sevCPUIDCmd(_ *shell.Interface, arg []string) (string, error) {
+	var res bytes.Buffer
+
+	leaf, err := strconv.ParseUint(arg[0], 16, 32)
+
+	if err != nil {
+		return "", fmt.Errorf("invalid leaf, %v", err)
+	}
+
+	subleaf, err := strconv.ParseUint(arg[1], 10, 32)
+
+	if err != nil {
+		return "", fmt.Errorf("invalid subleaf, %v", err)
+	}
+
+	if kvm.CPUID == nil {
+		return "", errors.New("could not find AMD SEV-SNP CPUID page")
+	}
+
+	eax, ebx, ecx, edx := kvm.CPUID(uint32(leaf), uint32(subleaf))
+
+	fmt.Fprintf(&res, "EAX      EBX      ECX      EDX\n")
+	fmt.Fprintf(&res, "%08x %08x %08x %08x\n", eax, ebx, ecx, edx)
+
+	return res.String(), nil
 }
 
 func attestationCmd(_ *shell.Interface, arg []string) (res string, err error) {

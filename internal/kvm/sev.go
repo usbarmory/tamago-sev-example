@@ -18,6 +18,7 @@ import (
 var (
 	Features *sev.SVMFeatures
 	Secrets  *sev.SecretsPage
+	CPUIDs   *sev.CPUIDPage
 	GHCB     map[uint64]*sev.GHCB
 )
 
@@ -72,6 +73,12 @@ func InitGHCB() (err error) {
 		return fmt.Errorf(" could not initialize AMD SEV-SNP secrets, %v", err)
 	}
 
+	CPUIDs = &sev.CPUIDPage{}
+
+	if err = CPUIDs.Init(uint(snp.CPUIDPagePhysicalAddress), int(snp.CPUIDPageSize)); err != nil {
+		return fmt.Errorf(" could not initialize AMD SEV-SNP CPUID, %v", err)
+	}
+
 	// map GHCB <> vCPU
 	GHCB = make(map[uint64]*sev.GHCB)
 
@@ -97,4 +104,12 @@ func InitGHCB() (err error) {
 	}
 
 	return
+}
+
+func CPUID(leaf, subleaf uint32) (eax, ebx, ecx, edx uint32) {
+	if CPUIDs == nil {
+		return
+	}
+
+	return CPUIDs.CPUID(leaf, subleaf)
 }

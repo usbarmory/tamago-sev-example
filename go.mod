@@ -11,7 +11,7 @@ require (
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
 	github.com/usbarmory/go-boot v1.9.2-0.20261116132820-3fe9c51c0a9d
 	github.com/usbarmory/go-net v0.0.0-20261123075119-26f36caf8130
-	github.com/usbarmory/tamago v1.27.4
+	github.com/usbarmory/tamago v1.27.5-0.20261124145423-97c5fb131e5e
 	golang.org/x/crypto v0.57.0
 	golang.org/x/crypto/x509roots/fallback v0.0.0-20261020153306-9f2b28d4331a
 )
