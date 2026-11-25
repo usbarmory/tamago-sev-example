@@ -50,8 +50,8 @@ github.com/u-root/uio v0.0.0-20240224005618-d2acac8f3701 h1:pyC9PaHYZFgEKFdlp3G8
 github.com/u-root/uio v0.0.0-20240224005618-d2acac8f3701/go.mod h1:P3a5rG4X7tI17Nn3aOIAYr5HbIMukwXG0urG0WuL8OA=
 github.com/ulikunitz/xz v0.5.15 h1:9DNdB5s+SgV3bQ2ApL10xRc35ck0DuIX/isZvIk+ubY=
 github.com/ulikunitz/xz v0.5.15/go.mod h1:nbz6k7qbPmH4IRqmfOplQw/tblSgqTqBwxkY0oWt/14=
-github.com/usbarmory/armory-boot v0.0.0-20260410072034-d4cd302c7f4c h1:BiiEFdNqocjKVORVyRJwI5V61IINvwLf/rxVbUmr8Yc=
-github.com/usbarmory/armory-boot v0.0.0-20260410072034-d4cd302c7f4c/go.mod h1:Ut0PLSVlEWNDotc43KrCBc1A2mWi+A/py0rvoicUl0I=
+github.com/usbarmory/armory-boot v0.0.0-20261125141210-68a562fce9a3 h1:SweybeTn+2OwCHe90vmAFccUpiYmcvlSjrU1tL0uig4=
+github.com/usbarmory/armory-boot v0.0.0-20261125141210-68a562fce9a3/go.mod h1:LPQSIPVGQqsxnuNRcneF1Onhbpu9S8BW8EJcgd6boIo=
 github.com/usbarmory/go-boot v1.9.2-0.20261116132820-3fe9c51c0a9d h1:Eiom5L1l7uOW+qXW/SXAv+VvBnXbFvF0VQJUJnT97r4=
 github.com/usbarmory/go-boot v1.9.2-0.20261116132820-3fe9c51c0a9d/go.mod h1:V36djY8Cm6FLJI0mtQT35FdbBcRLgt+tHaGgrgACO64=
 github.com/usbarmory/go-net v0.0.0-20261123075119-26f36caf8130 h1:BbNNavNsAzAR+GipKNFRU8P0knIXAV2S1w+YNJCtNU0=

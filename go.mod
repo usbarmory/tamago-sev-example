@@ -9,6 +9,7 @@ require (
 	github.com/gliderlabs/ssh v0.3.8
 	github.com/google/go-sev-guest v0.14.1
 	github.com/hako/durafmt v0.0.0-20210608085754-5c1018a4e16b
+	github.com/usbarmory/armory-boot v0.0.0-20261125141210-68a562fce9a3
 	github.com/usbarmory/go-boot v1.9.2-0.20261116132820-3fe9c51c0a9d
 	github.com/usbarmory/go-net v0.0.0-20261123075119-26f36caf8130
 	github.com/usbarmory/tamago v1.27.5-0.20261124145423-97c5fb131e5e
@@ -32,7 +33,6 @@ require (
 	github.com/u-root/u-root v0.16.0 // indirect
 	github.com/u-root/uio v0.0.0-20240224005618-d2acac8f3701 // indirect
 	github.com/ulikunitz/xz v0.5.15 // indirect
-	github.com/usbarmory/armory-boot v0.0.0-20260410072034-d4cd302c7f4c // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc // indirect
 	golang.org/x/sys v0.48.0 // indirect

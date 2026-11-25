@@ -29,6 +29,7 @@ date            (time in RFC339 format)?  # show/change runtime date and time
 dns             <host>                    # resolve domain
 efivar          (verbose)?                # list all UEFI variables
 exit,quit                                 # exit application
+go              <path> <hex addr> <size>  # load and start TamaGo EFI unikernel
 halt,shutdown                             # shutdown system
 help                                      # this help
 info                                      # device information
